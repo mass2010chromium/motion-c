@@ -3,11 +3,10 @@
 
 #include "utils.h"
 
-#define SO3_STRICT 1
-
 #include "so3.h"
-#include "vectorops.h"
+
 #include <math.h>
+#include "vectorops.h"
 
 PyDoc_STRVAR(so3_identity_doc, "Returns the identity rotation");
 PyDoc_STRVAR(so3_inv_doc, "Inverts the rotation");
@@ -43,8 +42,8 @@ static PyMethodDef so3Methods[] = {
     {"identity", so3_identity, METH_NOARGS, so3_identity_doc},
     {"inv", so3_inv, METH_VARARGS, so3_inv_doc},
     {"apply", so3_apply, METH_VARARGS, so3_apply_doc},
-    {"matrix", so3_matrix, METH_VARARGS, so3_matrix_doc},
-    {"from_matrix", so3_from_matrix, METH_VARARGS, so3_from_matrix_doc},
+    {"matrix", (PyCFunction) so3_matrix, METH_FASTCALL, so3_matrix_doc},
+    {"from_matrix", (PyCFunction) so3_from_matrix, METH_FASTCALL, so3_from_matrix_doc},
     {"mul", so3_mul, METH_VARARGS, so3_mul_doc},
     {"trace", so3_trace, METH_VARARGS, so3_trace_doc},
     {"angle", so3_angle, METH_VARARGS, so3_angle_doc},
@@ -136,94 +135,36 @@ PyObject* so3_apply(PyObject* self, PyObject* args) {
 /**
  * Returns the 3x3 rotation matrix corresponding to R
  */
-PyObject* so3_matrix(PyObject* self, PyObject* args) {
-    PyObject* rot;
-    if (!PyArg_UnpackTuple(args, "matrix", 1, 1, &rot)) {
+PyObject* so3_matrix(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+#ifdef MOTION_DEBUG
+    if (nargs != 1) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
         return NULL;
     }
+#endif
+    PyObject* rot = args[0];
     double buffer[9];
     if (parse_rotation(buffer, rot)) {
         return NULL;
     }
-    double buffer2[9];
-    __so3_inv(buffer2, buffer);
-    PyObject* l1 = vector_to_list(buffer2, 3);
-#ifdef MOTION_DEBUG
-    if (l1 == NULL) {
-        return NULL;
-    }
-#endif
-    PyObject* l2 = vector_to_list(buffer2+3, 3);
-#ifdef MOTION_DEBUG
-    if (l2 == NULL) {
-        Py_DECREF(l1);
-        return NULL;
-    }
-#endif
-    PyObject* l3 = vector_to_list(buffer2+6, 3);
-#ifdef MOTION_DEBUG
-    if (l3 == NULL) {
-        Py_DECREF(l1);
-        Py_DECREF(l2);
-        return NULL;
-    }
-#endif
-    PyObject* result = Py_BuildValue("[OOO]", l1, l2, l3);
-#ifdef MOTION_DEBUG
-    if (result == NULL) {
-        Py_DECREF(l1);
-        Py_DECREF(l2);
-        Py_DECREF(l3);
-        return NULL;
-    }
-#endif
-    return result;
+    return __so3_matrix(buffer);
 }
 
 /**
  * Returns an R corresponding to the 3x3 rotation matrix mat
  */
-PyObject* so3_from_matrix(PyObject* self, PyObject* args) {
-    PyObject* rot;
-    if (!PyArg_UnpackTuple(args, "matrix", 1, 1, &rot)) {
-        return NULL;
-    }
+PyObject* so3_from_matrix(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
-    Py_ssize_t n = PyObject_Length(rot);
-    if (n < 0) {
-        PyErr_SetString(PyExc_TypeError, "object has no length");
-        return NULL;
-    }
-#ifdef SO3_STRICT
-    if (n != 3) {
-        PyErr_SetString(PyExc_ValueError, "Rotation is 3x3 matrix");
+    if (nargs != 1) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
         return NULL;
     }
 #endif
-#endif
-
-    PyObject* it = PyObject_GetIter(rot);
-#ifdef MOTION_DEBUG
-    if (it == NULL) {
+    double ret[9];
+    if (__so3_from_matrix(ret, args[0])) {
         return NULL;
     }
-#endif
-
-    double buf[9];
-    double* buf_head = buf;
-    PyObject* curr;
-    while ((curr = PyIter_Next(it))) {
-        if (parse_vec3(buf_head, curr)) {
-            Py_DECREF(it);
-            return NULL;
-        }
-        buf_head += 3;
-        Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.
-    }
-    Py_DECREF(it);
-    double buf2[9];
-    __so3_inv(buf2, buf);
-    return vector_to_list(buf2, 9);
+    return vector_to_list(ret, 9);
 }
 
 /**

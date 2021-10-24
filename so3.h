@@ -3,26 +3,47 @@
 #include <Python.h>
 
 #include <math.h>
-
 #include "vectorops.h"
 
+#ifdef MOTION_DEBUG
+#ifdef SO3_STRICT
+#define PARSE_VEC_FIX(name, len) \
+int parse_ ## name (double* dest, PyObject* vec) { \
+    Py_ssize_t n = PyObject_Length(vec); \
+    if (n < 0) { \
+        PyErr_SetString(PyExc_TypeError, "object has no length"); \
+        return 1; \
+    } \
+    if (n != (len)) { \
+        PyErr_SetString(PyExc_ValueError, #name " expected " #len " element vector"); \
+        return 1; \
+    } \
+    PyObject* it = list_to_vector_n(vec, dest, (len)); \
+    if (it == NULL) return 1; \
+    Py_DECREF(it); \
+    return 0; \
+}
+#else
 #define PARSE_VEC_FIX(name, len) \
 inline int parse_ ## name (double* dest, PyObject* vec) { \
-    if (MOTION_DEBUG) { \
-        Py_ssize_t n = PyObject_Length(vec); \
-        if (n < 0) { \
-            PyErr_SetString(PyExc_TypeError, "object has no length"); \
-            return 1; \
-        } \
-        if (SO3_STRICT) { \
-            if (n != (len)) { \
-                PyErr_SetString(PyExc_ValueError, #name " expected " #len " element vector"); \
-                return 1; \
-            } \
-        } \
+    Py_ssize_t n = PyObject_Length(vec); \
+    if (n < 0) { \
+        PyErr_SetString(PyExc_TypeError, "object has no length"); \
+        return 1; \
+    } \
+    if (n > (len)) { \
+        PyErr_SetString(PyExc_ValueError, #name " expected " #len " element vector"); \
+        return 1; \
     } \
     return list_to_vector(vec, dest); \
 }
+#endif
+#else
+#define PARSE_VEC_FIX(name, len) \
+inline int parse_ ## name (double* dest, PyObject* vec) { \
+    return list_to_vector(vec, dest); \
+}
+#endif
 
 PARSE_VEC_FIX(rotation, 9);
 PARSE_VEC_FIX(vec3, 3);
@@ -66,12 +87,102 @@ inline void __so3_apply(double* dest, double* r, double* v) {
 /**
  * Returns the 3x3 rotation matrix corresponding to R
  */
-PyObject* so3_matrix(PyObject* self, PyObject* args);
+PyObject* so3_matrix(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+
+#ifndef MOTION_DEBUG
+inline
+#endif
+PyObject* __so3_matrix(double* buffer) {
+    double buffer2[9];
+    __so3_inv(buffer2, buffer);
+    PyObject* l1 = vector_to_list(buffer2, 3);
+#ifdef MOTION_DEBUG
+    if (l1 == NULL) {
+        return NULL;
+    }
+#endif
+    PyObject* l2 = vector_to_list(buffer2+3, 3);
+#ifdef MOTION_DEBUG
+    if (l2 == NULL) {
+        Py_DECREF(l1);
+        return NULL;
+    }
+#endif
+    PyObject* l3 = vector_to_list(buffer2+6, 3);
+#ifdef MOTION_DEBUG
+    if (l3 == NULL) {
+        Py_DECREF(l1);
+        Py_DECREF(l2);
+        return NULL;
+    }
+#endif
+    PyObject* result = Py_BuildValue("[OOO]", l1, l2, l3);
+#ifdef MOTION_DEBUG
+    if (result == NULL) {
+        Py_DECREF(l1);
+        Py_DECREF(l2);
+        Py_DECREF(l3);
+        return NULL;
+    }
+#endif
+    return result;
+}
 
 /**
  * Returns an R corresponding to the 3x3 rotation matrix mat
  */
-PyObject* so3_from_matrix(PyObject* self, PyObject* args);
+PyObject* so3_from_matrix(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+
+#ifndef MOTION_DEBUG
+inline
+#endif
+int __so3_from_matrix(double* dest, PyObject* rot) {
+#ifdef MOTION_DEBUG
+    Py_ssize_t n = PyObject_Length(rot);
+    if (n < 0) {
+        PyErr_SetString(PyExc_TypeError, "object has no length");
+        return 1;
+    }
+#ifdef SO3_STRICT
+    if (n != 3)
+#else
+    if (n < 3)
+#endif
+    {
+        PyErr_SetString(PyExc_ValueError, "Rotation is 3x3 matrix");
+        return 1;
+    }
+#endif
+
+    PyObject* it = PyObject_GetIter(rot);
+#ifdef MOTION_DEBUG
+    if (it == NULL) {
+        return 1;
+    }
+#endif
+
+    double buf[9];
+    double* buf_head = buf;
+    PyObject* curr;
+    while ((curr = PyIter_Next(it))) {
+#ifdef MOTION_DEBUG
+        if (curr == NULL) {
+            Py_DECREF(it);
+            return 1;
+        }
+#endif
+        if (parse_vec3(buf_head, curr)) {
+            Py_DECREF(curr);
+            Py_DECREF(it);
+            return 1;
+        }
+        buf_head += 3;
+        Py_DECREF(curr);
+    }
+    Py_DECREF(it);
+    __so3_inv(dest, buf);
+    return 0;
+}
 
 /**
  * Multiplies two rotations.
@@ -347,7 +458,7 @@ inline int __so3_quaternion(double* q, double* rot) {
  */
 PyObject* so3_distance(PyObject* self, PyObject* args);
 
-inline double __so3_distance(double* r1, double* r2) {
+inline double __so3_distance(const double* r1, const double* r2) {
     double scratch1[9];
     double scratch2[9];
     __so3_inv(scratch1, r2);

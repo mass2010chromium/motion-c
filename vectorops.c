@@ -142,23 +142,20 @@ PyObject* vectorops_madd(PyObject* self, PyObject* const* args, Py_ssize_t nargs
     return vector_to_list(buffer, n);
 }
 
+#ifdef MOTION_DEBUG
 #define VO_BINOP(name) \
 PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs) { \
-if (MOTION_DEBUG) { \
     if (nargs != 2) { \
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)"); \
         return NULL; \
     } \
-} \
     PyObject* a = args[0]; \
     PyObject* b = args[1]; \
     Py_ssize_t n = PyObject_Length(a); \
-if (MOTION_DEBUG) { \
     if (n < 0) { \
         PyErr_SetString(PyExc_TypeError, "object has no length"); \
         return NULL; \
     } \
-} \
     double buffer[n]; \
     if (list_to_vector(a, buffer)) { \
         return NULL; \
@@ -168,7 +165,6 @@ if (MOTION_DEBUG) { \
         return vector_to_list(buffer, n); \
     } \
     double buffer2[n]; \
-if (MOTION_DEBUG) { \
     Py_ssize_t n2 = PyObject_Length(b); \
     if (n != n2) { \
         PyErr_SetString(PyExc_ValueError, "vector dimensions differ"); \
@@ -177,10 +173,28 @@ if (MOTION_DEBUG) { \
     if (list_to_vector(b, buffer2)) { \
         return NULL; \
     } \
-} \
     __vo_ ## name ## v (buffer, buffer, buffer2, n); \
     return vector_to_list(buffer, n); \
 }
+#else
+#define VO_BINOP(name) \
+PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs) { \
+    PyObject* a = args[0]; \
+    PyObject* b = args[1]; \
+    Py_ssize_t n = PyObject_Length(a); \
+    double buffer[n]; \
+    if (list_to_vector(a, buffer)) { \
+        return NULL; \
+    } \
+    if (PyFloat_Check(b) || PyLong_Check(b)) { \
+        __vo_ ## name (buffer, buffer, PyFloat_AsDouble(b), n); \
+        return vector_to_list(buffer, n); \
+    } \
+    double buffer2[n]; \
+    __vo_ ## name ## v (buffer, buffer, buffer2, n); \
+    return vector_to_list(buffer, n); \
+}
+#endif
 
 /**
  * Subtract a vector b from a, or subtract a scalar

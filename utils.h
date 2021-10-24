@@ -1,6 +1,5 @@
 #pragma once
 
-#define MOTION_DEBUG 1
 #define CASE_3_6
 
 #define PY_SSIZE_T_CLEAN
@@ -77,6 +76,41 @@ int list_to_vector(PyObject* list, double* vec) {
     }
     Py_DECREF(it);
     return 0;
+}
+
+/**
+ * Returns NULL on failure, or the iterator handle on success.
+ */
+#ifndef MOTION_DEBUG
+inline
+#endif
+PyObject* list_to_vector_n(PyObject* list, double* vec, int n) {
+    PyObject* it = PyObject_GetIter(list);
+#ifdef MOTION_DEBUG
+    if (it == NULL) {
+        return NULL;
+    }
+#endif
+
+    PyObject* curr;
+    double* head = vec;
+    for (int i = 0; i < n; ++i) {
+        curr = PyIter_Next(it);
+#ifdef MOTION_DEBUG
+        if (curr == NULL) {
+            return NULL;
+        }
+        if (!(PyFloat_Check(curr) || PyLong_Check(curr))) {
+            Py_DECREF(curr);
+            Py_DECREF(it);
+            PyErr_SetString(PyExc_TypeError, "expected float array");
+            return NULL;
+        }
+#endif
+        *(head++) = PyFloat_AsDouble(curr); // Works for long too hmm
+        Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.
+    }
+    return it;
 }
 
 /**
