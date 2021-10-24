@@ -573,11 +573,66 @@ PyObject* so3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t narg
 }
 
 /**
+ * "lambda" function for interpolator.
+ * First argument: Bytes object with the raw data
+ */
+static PyObject* __so3_interpolate_f(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+#ifdef MOTION_DEBUG
+    if (nargs != 1) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
+        return NULL;
+    }
+    if (!(PyFloat_Check(args[0]) || PyLong_Check(args[0]))) {
+        PyErr_SetString(PyExc_TypeError, "Expected number for args[0]");
+        return NULL;
+    }
+#endif
+    double u = PyFloat_AsDouble(args[0]);
+    so3_interpolator_t* data = (so3_interpolator_t*) PyBytes_AS_STRING(self);
+    double tmp[9];
+    double result[9];
+    __so3_rotation(tmp, data->axis, data->angle*u);
+    __so3_mul(result, data->rot, tmp);
+    return vector_to_list(result, 9);
+}
+
+static struct PyMethodDef
+__so3_interpolator_cb = {.ml_name  = "f@interpolator",
+                         .ml_meth  = (PyCFunction) __so3_interpolate_f,
+                         .ml_flags = METH_FASTCALL,
+                         .ml_doc   = NULL};
+
+/**
  * Returns a function of one parameter u that interpolates linearly between the two rotations R1 and R2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(R1,R2,u).
  */
 PyObject* so3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
-    PyErr_SetString(PyExc_NotImplementedError, "Not implemented :(");
-    return NULL;
+#ifdef MOTION_DEBUG
+    if (nargs != 2) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
+        return NULL;
+    }
+#endif
+    double r1[9];
+    double r2[9];
+    so3_interpolator_t result;
+    if (parse_rotation(r1, args[0])) {
+        return NULL;
+    }
+    if (parse_rotation(r2, args[1])) {
+        return NULL;
+    }
+    __so3_interpolator_init(&result, r1, r2);
+
+    PyObject* byte_data = PyBytes_FromStringAndSize(NULL, sizeof(result));
+    if (byte_data == NULL) {
+        return NULL;
+    }
+    char* save_data = PyBytes_AS_STRING(byte_data);
+    memcpy(save_data, &result, sizeof(result));
+
+    PyObject* ret = PyCFunction_New(&__so3_interpolator_cb, byte_data);
+    Py_DECREF(byte_data);
+    return ret;
 }
 
 /**

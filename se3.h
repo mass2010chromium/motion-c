@@ -191,7 +191,24 @@ inline void __se3_interpolate(double* ret, double* t1, double* t2, double u) {
     __vo_interpolate(ret+3, t1+9, t2+9, u, 3);
 }
 
+typedef struct {
+    double rot[9];
+    double axis[3];
+    double angle;
+    double t1[3];
+    double dt[3];
+} se3_interpolator_t;
+
+inline void __se3_interpolator_init(se3_interpolator_t* ret, double* t1, double* t2) {
+    __so3_interpolator_init((so3_interpolator_t*) ret, t1, t2);
+    memcpy(ret->t1, t1+9, sizeof(double)*3);
+    __vo_subv(ret->dt, t2+9, t1+9, 3);
+}
+
 /**
- * Returns a function of one parameter u that interpolates linearly between the two transformations T1 and T2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).
+ * Returns a function of one parameter u that interpolates linearly
+ * between the two transformations T1 and T2.
+ * 
+ * After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).
  */
 PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs);

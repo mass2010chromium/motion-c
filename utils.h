@@ -1,6 +1,6 @@
 #pragma once
 
-#define CASE_3_6
+//#define CASE_3_6
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>

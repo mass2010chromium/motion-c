@@ -435,7 +435,7 @@ PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 3) {
-        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 3)");
         return NULL;
     }
     if (!(PyFloat_Check(args[2]) || PyLong_Check(args[2]))) {
@@ -459,9 +459,65 @@ PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t narg
 }
 
 /**
+ * "lambda" function for interpolator.
+ * First argument: Bytes object with the raw data
+ */
+static PyObject* __se3_interpolate_f(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+#ifdef MOTION_DEBUG
+    if (nargs != 1) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
+        return NULL;
+    }
+    if (!(PyFloat_Check(args[0]) || PyLong_Check(args[0]))) {
+        PyErr_SetString(PyExc_TypeError, "Expected number for args[0]");
+        return NULL;
+    }
+#endif
+    double u = PyFloat_AsDouble(args[0]);
+    se3_interpolator_t* data = (se3_interpolator_t*) PyBytes_AS_STRING(self);
+    double tmp[9];
+    double result[12];
+    __so3_rotation(tmp, data->axis, data->angle*u);
+    __so3_mul(result, data->rot, tmp);
+    __vo_madd(result+9, data->t1, data->dt, u, 3);
+    return return_se3(result);
+}
+
+static struct PyMethodDef
+__se3_interpolator_cb = {.ml_name  = "f@interpolator",
+                         .ml_meth  = (PyCFunction) __se3_interpolate_f,
+                         .ml_flags = METH_FASTCALL,
+                         .ml_doc   = NULL};
+
+/**
  * Returns a function of one parameter u that interpolates linearly between the two transformations T1 and T2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).
  */
 PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
-    PyErr_SetString(PyExc_NotImplementedError, "Not implemented :(");
-    return NULL;
+#ifdef MOTION_DEBUG
+    if (nargs != 2) {
+        PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
+        return NULL;
+    }
+#endif
+    double t1[12];
+    double t2[12];
+    se3_interpolator_t result;
+    if (parse_se3(t1, args[0])) {
+        return NULL;
+    }
+    if (parse_se3(t2, args[1])) {
+        return NULL;
+    }
+    __se3_interpolator_init(&result, t1, t2);
+
+    PyObject* byte_data = PyBytes_FromStringAndSize(NULL, sizeof(result));
+    if (byte_data == NULL) {
+        return NULL;
+    }
+    char* save_data = PyBytes_AS_STRING(byte_data);
+    memcpy(save_data, &result, sizeof(result));
+
+    PyObject* ret = PyCFunction_New(&__se3_interpolator_cb, byte_data);
+    Py_DECREF(byte_data);
+    return ret;
 }

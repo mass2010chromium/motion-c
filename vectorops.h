@@ -12,13 +12,23 @@ PyObject* vectorops_add(PyObject* self, PyObject* const* args, Py_ssize_t nargs)
 inline void __vo_add(double* dest, double* a, double* b, int len) {
     switch(len) {
 #ifdef CASE_3_6
+        case 9:
+            dest[8] = a[8] + b[8];
+        case 8:
+            dest[7] = a[7] + b[7];
+        case 7:
+            dest[6] = a[6] + b[6];
         case 6:
             dest[5] = a[5] + b[5];
+        case 5:
             dest[4] = a[4] + b[4];
+        case 4:
             dest[3] = a[3] + b[3];
         case 3:
             dest[2] = a[2] + b[2];
+        case 2:
             dest[1] = a[1] + b[1];
+        case 1:
             dest[0] = a[0] + b[0];
             return;
 #endif
@@ -37,13 +47,23 @@ PyObject* vectorops_madd(PyObject* self, PyObject* const* args, Py_ssize_t nargs
 inline void __vo_madd(double* dest, double* a, double* b, double c, int len) {
     switch(len) {
 #ifdef CASE_3_6
+        case 9:
+            dest[8] = a[8] + c*b[8];
+        case 8:
+            dest[7] = a[7] + c*b[7];
+        case 7:
+            dest[6] = a[6] + c*b[6];
         case 6:
             dest[5] = a[5] + c*b[5];
+        case 5:
             dest[4] = a[4] + c*b[4];
+        case 4:
             dest[3] = a[3] + c*b[3];
         case 3:
             dest[2] = a[2] + c*b[2];
+        case 2:
             dest[1] = a[1] + c*b[1];
+        case 1:
             dest[0] = a[0] + c*b[0];
             return;
 #endif
@@ -60,13 +80,23 @@ PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t 
  \
 inline void __vo_ ## name (double* dest, double* a, double b, int len) { \
     switch(len) { \
+        case 9: \
+            dest[8] = op(a[8], b); \
+        case 8: \
+            dest[7] = op(a[7], b); \
+        case 7: \
+            dest[6] = op(a[6], b); \
         case 6: \
             dest[5] = op(a[5], b); \
+        case 5: \
             dest[4] = op(a[4], b); \
+        case 4: \
             dest[3] = op(a[3], b); \
         case 3: \
             dest[2] = op(a[2], b); \
+        case 2: \
             dest[1] = op(a[1], b); \
+        case 1: \
             dest[0] = op(a[0], b); \
             return; \
         default: \
@@ -78,13 +108,23 @@ inline void __vo_ ## name (double* dest, double* a, double b, int len) { \
  \
 inline void __vo_ ## name ## v (double* dest, double* a, double* b, int len) { \
     switch(len) { \
+        case 9: \
+            dest[8] = op(a[8], b[8]); \
+        case 8: \
+            dest[7] = op(a[7], b[7]); \
+        case 7: \
+            dest[6] = op(a[6], b[6]); \
         case 6: \
             dest[5] = op(a[5], b[5]); \
+        case 5: \
             dest[4] = op(a[4], b[4]); \
+        case 4: \
             dest[3] = op(a[3], b[3]); \
         case 3: \
             dest[2] = op(a[2], b[2]); \
+        case 2: \
             dest[1] = op(a[1], b[1]); \
+        case 1: \
             dest[0] = op(a[0], b[0]); \
             return; \
         default: \
@@ -96,7 +136,7 @@ inline void __vo_ ## name ## v (double* dest, double* a, double* b, int len) { \
 
 #else
 #define __VO_BINOP_DECL(name, op) \
-PyObject* vectorops_ ## name (PyObject* self, PyObject* args); \
+PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs); \
  \
 inline void __vo_ ## name (double* dest, double* a, double b, int len) { \
     for (int i = 0; i < len; ++i) { \
@@ -219,13 +259,23 @@ inline double __vo_norm_L1(const double* a, int len) {
     double res = 0;
     switch(len) {
 #ifdef CASE_3_6
+        case 9:
+            res += fabs(a[8]);
+        case 8:
+            res += fabs(a[7]);
+        case 7:
+            res += fabs(a[6]);
         case 6:
             res += fabs(a[5]);
+        case 5:
             res += fabs(a[4]);
+        case 4:
             res += fabs(a[3]);
         case 3:
             res += fabs(a[2]);
+        case 2:
             res += fabs(a[1]);
+        case 1:
             res += fabs(a[0]);
             return res;
 #endif
@@ -245,24 +295,11 @@ PyObject* vectorops_norm_Linf(PyObject* self, PyObject* const* args, Py_ssize_t 
 inline double __vo_norm_Linf(const double* a, int len) {
     double max = 0;
     double tmp;
-    switch(len) {
-#ifdef CASE_3_6
-        case 6:
-            if ((tmp = fabs(a[5])) > max) max = tmp;
-            if ((tmp = fabs(a[4])) > max) max = tmp;
-            if ((tmp = fabs(a[3])) > max) max = tmp;
-        case 3:
-            if ((tmp = fabs(a[2])) > max) max = tmp;
-            if ((tmp = fabs(a[1])) > max) max = tmp;
-            if ((tmp = fabs(a[0])) > max) max = tmp;
-            return max;
-#endif
-        default:
-            for (int i = 0; i < len; ++i) {
-                if ((tmp = fabs(a[i])) > max) max = tmp;
-            }
-            return max;
+    // No case BS... if statements are magic
+    for (int i = 0; i < len; ++i) {
+        if ((tmp = fabs(a[i])) > max) max = tmp;
     }
+    return max;
 }
 
 /**
@@ -274,13 +311,23 @@ inline double __vo_distanceSquared(const double* a, const double* b, int len) {
     double res = 0;
     switch(len) {
 #ifdef CASE_3_6
+        case 9:
+            res += (a[8] - b[8]) * (a[8] - b[8]);
+        case 8:
+            res += (a[7] - b[7]) * (a[7] - b[7]);
+        case 7:
+            res += (a[6] - b[6]) * (a[6] - b[6]);
         case 6:
             res += (a[5] - b[5]) * (a[5] - b[5]);
+        case 5:
             res += (a[4] - b[4]) * (a[4] - b[4]);
+        case 4:
             res += (a[3] - b[3]) * (a[3] - b[3]);
         case 3:
             res += (a[2] - b[2]) * (a[2] - b[2]);
+        case 2:
             res += (a[1] - b[1]) * (a[1] - b[1]);
+        case 1:
             res += (a[0] - b[0]) * (a[0] - b[0]);
             return res;
 #endif

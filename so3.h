@@ -636,6 +636,31 @@ inline void __so3_interpolate(double* result, double* a, double* b, double c) {
     __so3_mul(result, a, scratch1);
 }
 
+typedef struct {
+    double rot[9];
+    double axis[3];
+    double angle;
+} so3_interpolator_t;
+
+inline void __so3_interpolator_init(so3_interpolator_t* ret, double* r1, double* r2) {
+    double r1_inv_buf[9];
+    double scratch[9];
+    double* m = r1_inv_buf;
+    __so3_inv(r1_inv_buf, r1);
+    __so3_mul(scratch, r1_inv_buf, r2);
+    __so3_rotation_vector(m, scratch);
+    double angle = __vo_norm(m, 3);
+    if (angle == 0) {
+        ret->axis[0] = 1.0;
+        ret->axis[1] = 0.0;
+        ret->axis[2] = 0.0;
+    }
+    else {
+        __vo_mul(ret->axis, m, 1/angle, 3);
+    }
+    ret->angle = angle;
+}
+
 /**
  * Returns a function of one parameter u that interpolates linearly between the two rotations R1 and R2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(R1,R2,u).
  */
