@@ -8,10 +8,11 @@ v3 = [0.0, 0.0, 0.0]
 c = 2
 c2 = 0.5
 
-def print(*args):
-    pass
+#def print(*args):
+#    pass
+N=1
 
-for i in range(1000000):
+for i in range(N):
     print(vo1.madd(v1, v2, c), vo2.madd(v1, v2, c))
     print(vo1.sub(v1, v2), vo2.sub(v1, v2))
     print(vo1.sub(v1, c), vo2.sub(v1, c))

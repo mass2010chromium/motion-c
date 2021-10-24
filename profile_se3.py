@@ -16,7 +16,7 @@ for i in range(NITER):
     mat3 = se3.error(mat1, mat2)
 te = time.time()
 print(te - ts)
-NITER = 10000
+NITER = 1000000
 ts = time.time()
 tmp = 0
 for i in range(NITER):

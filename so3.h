@@ -5,10 +5,17 @@
 #include <math.h>
 #include "vectorops.h"
 
+#define rptr double*
+#ifdef SO3_RESTRICT
+#define rptr_r double* restrict
+#else
+#define rptr_r double*
+#endif
+
 #ifdef MOTION_DEBUG
 #ifdef SO3_STRICT
 #define PARSE_VEC_FIX(name, len) \
-int parse_ ## name (double* dest, PyObject* vec) { \
+int parse_ ## name (rptr_r dest, PyObject* vec) { \
     Py_ssize_t n = PyObject_Length(vec); \
     if (n < 0) { \
         PyErr_SetString(PyExc_TypeError, "object has no length"); \
@@ -25,7 +32,7 @@ int parse_ ## name (double* dest, PyObject* vec) { \
 }
 #else
 #define PARSE_VEC_FIX(name, len) \
-inline int parse_ ## name (double* dest, PyObject* vec) { \
+inline int parse_ ## name (rptr_r dest, PyObject* vec) { \
     Py_ssize_t n = PyObject_Length(vec); \
     if (n < 0) { \
         PyErr_SetString(PyExc_TypeError, "object has no length"); \
@@ -40,7 +47,7 @@ inline int parse_ ## name (double* dest, PyObject* vec) { \
 #endif
 #else
 #define PARSE_VEC_FIX(name, len) \
-inline int parse_ ## name (double* dest, PyObject* vec) { \
+inline int parse_ ## name (rptr_r dest, PyObject* vec) { \
     return list_to_vector(vec, dest); \
 }
 #endif
@@ -61,7 +68,7 @@ PyObject* so3_identity(PyObject* self, PyObject* args);
  */
 PyObject* so3_inv(PyObject* self, PyObject* args);
 
-inline void __so3_inv(double* dest, double* src) {
+inline void __so3_inv(rptr_r dest, const rptr_r src) {
     dest[0] = src[0];
     dest[1] = src[3];
     dest[2] = src[6];
@@ -78,7 +85,7 @@ inline void __so3_inv(double* dest, double* src) {
  */
 PyObject* so3_apply(PyObject* self, PyObject* args);
 
-inline void __so3_apply(double* dest, double* r, double* v) {
+inline void __so3_apply(vptr_r dest, const rptr_r r, const vptr_r v) {
     dest[0] = r[0]*v[0] + r[3]*v[1] + r[6]*v[2];
     dest[1] = r[1]*v[0] + r[4]*v[1] + r[7]*v[2];
     dest[2] = r[2]*v[0] + r[5]*v[1] + r[8]*v[2];
@@ -92,7 +99,7 @@ PyObject* so3_matrix(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 #ifndef MOTION_DEBUG
 inline
 #endif
-PyObject* __so3_matrix(double* buffer) {
+PyObject* __so3_matrix(const rptr_r buffer) {
     double buffer2[9];
     __so3_inv(buffer2, buffer);
     PyObject* l1 = vector_to_list(buffer2, 3);
@@ -136,7 +143,7 @@ PyObject* so3_from_matrix(PyObject* self, PyObject* const* args, Py_ssize_t narg
 #ifndef MOTION_DEBUG
 inline
 #endif
-int __so3_from_matrix(double* dest, PyObject* rot) {
+int __so3_from_matrix(rptr_r dest, PyObject* rot) {
 #ifdef MOTION_DEBUG
     Py_ssize_t n = PyObject_Length(rot);
     if (n < 0) {
@@ -189,7 +196,7 @@ int __so3_from_matrix(double* dest, PyObject* rot) {
  */
 PyObject* so3_mul(PyObject* self, PyObject* args);
 
-inline void __so3_mul(double* dest, double* r1, double* r2) {
+inline void __so3_mul(rptr_r dest, const rptr_r r1, const rptr_r r2) {
     double r1_T[9];
     __so3_inv(r1_T, r1);
     dest[0] = __vo_dot(r1_T, r2, 3);
@@ -208,7 +215,7 @@ inline void __so3_mul(double* dest, double* r1, double* r2) {
  */
 PyObject* so3_trace(PyObject* self, PyObject* args);
 
-inline double __so3_trace(const double* rot) {
+inline double __so3_trace(const rptr_r rot) {
     return rot[0] + rot[4] + rot[8];
 }
 
@@ -217,7 +224,7 @@ inline double __so3_trace(const double* rot) {
  */
 PyObject* so3_angle(PyObject* self, PyObject* args);
 
-inline double __so3_angle(const double* rot) {
+inline double __so3_angle(const rptr_r rot) {
     double ctheta = clamp_unity((__so3_trace(rot) - 1) / 2);
     return acos(ctheta);
 }
@@ -227,7 +234,7 @@ inline double __so3_angle(const double* rot) {
  */
 PyObject* so3_rpy(PyObject* self, PyObject* args);
 
-inline void __so3_rpy(double* dest, const double* rot) {
+inline void __so3_rpy(rptr_r dest, const rptr_r rot) {
     double _sb = clamp_unity(rot[2]);   // rot[2, 0]
     double b = -asin(_sb);
     double cb = cos(b);
@@ -269,10 +276,10 @@ inline void __so3_rpy(double* dest, const double* rot) {
  */
 PyObject* so3_from_rpy(PyObject* self, PyObject* args);
 
-void __so3_rotation(double* dest, const double* axis, double angle);
-void __so3_deskew(double* dest, const double* rot);
+void __so3_rotation(rptr_r dest, const vptr_r axis, double angle);
+void __so3_deskew(vptr_r dest, const rptr_r rot);
 
-inline void __so3_from_rpy(double* dest, double* rpy) {
+inline void __so3_from_rpy(double* dest, const double* rpy) {
     double Rx[9];
     double Ry[9];
     double Rz[9];
@@ -289,7 +296,7 @@ inline void __so3_from_rpy(double* dest, double* rpy) {
  */
 PyObject* so3_rotation_vector(PyObject* self, PyObject* args);
 
-inline void __so3_rotation_vector(double* dest, double* rot) {
+inline void __so3_rotation_vector(vptr_r dest, const rptr_r rot) {
     double theta = __so3_angle(rot);
     if (fabs(theta - M_PI) < 0.5) {
         // for values close to pi this alternate technique has better numerical performance
@@ -389,7 +396,7 @@ PyObject* so3_from_rotation_vector(PyObject* self, PyObject* args);
  */
 PyObject* so3_from_quaternion(PyObject* self, PyObject* args);
 
-inline void __so3_from_quaternion(double* rot, double* q) {
+inline void __so3_from_quaternion(rptr_r rot, const double* restrict q) {
     double w = q[0], x = q[1], y = q[2], z = q[3];
 
     double x2 = x + x,  y2 = y + y,  z2 = z + z;
@@ -413,7 +420,7 @@ inline void __so3_from_quaternion(double* rot, double* q) {
  */
 PyObject* so3_quaternion(PyObject* self, PyObject* args);
 
-inline int __so3_quaternion(double* q, double* rot) {
+inline int __so3_quaternion(double* restrict q, const rptr_r rot) {
     double tr = __so3_trace(rot) + 1.0;
 
     if (tr > 1e-5) {
@@ -458,7 +465,7 @@ inline int __so3_quaternion(double* q, double* rot) {
  */
 PyObject* so3_distance(PyObject* self, PyObject* args);
 
-inline double __so3_distance(const double* r1, const double* r2) {
+inline double __so3_distance(const rptr_r r1, const rptr_r r2) {
     double scratch1[9];
     double scratch2[9];
     __so3_inv(scratch1, r2);
@@ -476,7 +483,7 @@ inline double __so3_distance(const double* r1, const double* r2) {
  */
 PyObject* so3_error(PyObject* self, PyObject* args);
 
-inline void __so3_error(double* ret, double* r1, double* r2) {
+inline void __so3_error(vptr_r ret, const rptr_r r1, const rptr_r r2) {
     double scratch1[9];
     double scratch2[9];
     __so3_inv(scratch1, r2);
@@ -491,7 +498,7 @@ inline void __so3_error(double* ret, double* r1, double* r2) {
  */
 PyObject* so3_cross_product(PyObject* self, PyObject* args);
 
-inline void __so3_cross_product(double* dest, const double* vec) {
+inline void __so3_cross_product(rptr_r dest, const vptr_r vec) {
     dest[0] = 0;
     dest[1] = vec[2];
     dest[2] = -vec[1];
@@ -508,7 +515,7 @@ inline void __so3_cross_product(double* dest, const double* vec) {
  */
 PyObject* so3_diag(PyObject* self, PyObject* args);
 
-inline void __so3_diag(double* dest, const double* rot) {
+inline void __so3_diag(vptr_r dest, const rptr_r rot) {
     dest[0] = rot[0];
     dest[1] = rot[4];
     dest[2] = rot[8];
@@ -521,7 +528,7 @@ inline void __so3_diag(double* dest, const double* rot) {
  */
 PyObject* so3_deskew(PyObject* self, PyObject* args);
 
-inline void __so3_deskew(double* dest, const double* rot) {
+inline void __so3_deskew(vptr_r dest, const rptr_r rot) {
     dest[0] = (rot[5] - rot[7])/2;
     dest[1] = (rot[6] - rot[2])/2;
     dest[2] = (rot[1] - rot[3])/2;
@@ -532,7 +539,7 @@ inline void __so3_deskew(double* dest, const double* rot) {
  */
 PyObject* so3_rotation(PyObject* self, PyObject* args);
 
-inline void __so3_rotation(double* dest, const double* axis, double angle) {
+inline void __so3_rotation(rptr_r dest, const vptr_r axis, double angle) {
     double cm = cos(angle);
     double sm = sin(angle);
     __so3_cross_product(dest, axis);
@@ -556,7 +563,7 @@ inline void __so3_rotation(double* dest, const double* axis, double angle) {
  */
 PyObject* so3_canonical(PyObject* self, PyObject* args);
 
-inline void __so3_canonical(double* basis, double* axis) {
+inline void __so3_canonical(rptr_r basis, const vptr_r axis) {
     if (fabs(axis[0] - 1.0) < 1e5) {
         memcpy(basis, SO3_ID, sizeof(SO3_ID));
         return;
@@ -588,18 +595,20 @@ inline void __so3_canonical(double* basis, double* axis) {
  */
 PyObject* so3_vector_rotation(PyObject* self, PyObject* args);
 
-inline void __so3_vector_rotation(double* output, double* v1, double* v2) {
+inline void __so3_vector_rotation(rptr_r output, const vptr_r v1, const vptr_r v2) {
     double cross[3];
+    double u_v1[3];
+    double u_v2[3];
 
-    __vo_unit(v1, v1, 1e-5, 3);
-    __vo_unit(v2, v2, 1e-5, 3);
-    __vo_cross3(cross, v1, v2);
-    double dot = __vo_dot(v1, v2, 3);
+    __vo_unit(u_v1, v1, 1e-5, 3);
+    __vo_unit(u_v2, v2, 1e-5, 3);
+    __vo_cross3(cross, u_v1, u_v2);
+    double dot = __vo_dot(u_v1, u_v2, 3);
 
     if (__vo_norm(cross, 3) < 1e-4) {
         if (dot < 0) {
             double scratch[9];
-            __so3_canonical(scratch, v1);
+            __so3_canonical(scratch, u_v1);
             __so3_rotation(output, scratch+3, M_PI);
         }
         else {
@@ -619,7 +628,7 @@ inline void __so3_vector_rotation(double* output, double* v1, double* v2) {
  */
 PyObject* so3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __so3_interpolate(double* result, double* a, double* b, double c) {
+inline void __so3_interpolate(rptr_r result, const rptr_r a, const rptr_r b, double c) {
     double scratch1[9];
     double scratch2[9];
     double scratchv[3];
@@ -642,7 +651,7 @@ typedef struct {
     double angle;
 } so3_interpolator_t;
 
-inline void __so3_interpolator_init(so3_interpolator_t* ret, double* r1, double* r2) {
+inline void __so3_interpolator_init(so3_interpolator_t* ret, const rptr_r r1, const rptr_r r2) {
     double r1_inv_buf[9];
     double scratch[9];
     double* m = r1_inv_buf;
@@ -671,7 +680,7 @@ PyObject* so3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nar
  */
 PyObject* so3_det(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline double __so3_det(const double* rot) {
+inline double __so3_det(const rptr_r rot) {
     return rot[0] * rot[4] * rot[8]
          + rot[3] * rot[7] * rot[2]
          + rot[6] * rot[1] * rot[5]
@@ -685,7 +694,7 @@ inline double __so3_det(const double* rot) {
  */
 PyObject* so3_is_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline int __so3_is_rotation(double* rot, double tol) {
+inline int __so3_is_rotation(rptr_r rot, double tol) {
     double scratch1[9];
     double scratch2[9];
     __so3_inv(scratch1, rot);
@@ -702,7 +711,7 @@ inline int __so3_is_rotation(double* rot, double tol) {
  */
 PyObject* so3_sample(PyObject* self, PyObject* args);
 
-inline void __so3_sample(double* result) {
+inline void __so3_sample(rptr_r result) {
     double q[4];
     q[0] = sampleNormal(q+1);
     q[2] = sampleNormal(q+3);

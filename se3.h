@@ -6,10 +6,17 @@
 #include "vectorops.h"
 #include "so3.h"
 
+#define tptr double*
+#ifdef SE3_RESTRICT
+#define tptr_r double* restrict
+#else
+#define tptr_r double*
+#endif
+
 #ifndef MOTION_DEBUG
 inline
 #endif
-PyObject* return_se3(const double* data) {
+PyObject* return_se3(const tptr_r data) {
     PyObject* rot = vector_to_list(data, 9);
 #ifdef MOTION_DEBUG
     if (rot == NULL) {
@@ -37,7 +44,7 @@ PyObject* return_se3(const double* data) {
 #ifndef MOTION_DEBUG
 inline
 #endif
-int parse_se3 (double* dest, PyObject* vec) {
+int parse_se3 (tptr_r dest, PyObject* vec) {
 #ifdef MOTION_DEBUG
     Py_ssize_t n = PyObject_Length(vec);
 #ifdef SE3_STRICT
@@ -98,7 +105,7 @@ PyObject* se3_identity(PyObject* self, PyObject* args);
  */
 PyObject* se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __se3_inv(double* ret, double* transform) {
+inline void __se3_inv(tptr_r ret, const tptr_r transform) {
     __so3_inv(ret, transform);
     __so3_apply(ret+9, ret, transform+9);
     __vo_mul(ret+9, ret+9, -1, 3);
@@ -109,7 +116,7 @@ inline void __se3_inv(double* ret, double* transform) {
  */
 PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __se3_apply(double* ret, double* transform, double* point) {
+inline void __se3_apply(vptr_r ret, const tptr_r transform, const vptr_r point) {
     __so3_apply(ret, transform, point);
     __vo_add(ret, ret, transform+9, 3);
 }
@@ -154,7 +161,7 @@ PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t
  */
 PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __se3_mul(double* ret, double* t1, double* t2) {
+inline void __se3_mul(tptr_r ret, const tptr_r t1, const tptr_r t2) {
     __so3_mul(ret, t1, t2);
     __so3_apply(ret+9, t1, t2+9);
     __vo_add(ret+9, ret+9, t1+9, 3);
@@ -165,7 +172,7 @@ inline void __se3_mul(double* ret, double* t1, double* t2) {
  */
 PyObject* se3_distance(PyObject* self, PyObject* args, PyObject* kwargs);
 
-inline double __se3_distance(const double* t1, const double* t2,
+inline double __se3_distance(const tptr_r t1, const tptr_r t2,
                              double rweight, double tweight) {
     return __so3_distance(t1, t2) * rweight
          + __vo_distance(t1+9, t2+9, 3) * tweight;
@@ -176,7 +183,7 @@ inline double __se3_distance(const double* t1, const double* t2,
  */
 PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __se3_error(double* ret, double* t1, double* t2) {
+inline void __se3_error(vptr_r ret, const tptr_r t1, const tptr_r t2) {
     __so3_error(ret, t1, t2);
     __vo_subv(ret+3, t1+9, t2+9, 3);
 }
@@ -186,7 +193,7 @@ inline void __se3_error(double* ret, double* t1, double* t2) {
  */
 PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
 
-inline void __se3_interpolate(double* ret, double* t1, double* t2, double u) {
+inline void __se3_interpolate(tptr_r ret, const tptr_r t1, const tptr_r t2, double u) {
     __so3_interpolate(ret, t1, t2, u);
     __vo_interpolate(ret+3, t1+9, t2+9, u, 3);
 }
@@ -199,7 +206,7 @@ typedef struct {
     double dt[3];
 } se3_interpolator_t;
 
-inline void __se3_interpolator_init(se3_interpolator_t* ret, double* t1, double* t2) {
+inline void __se3_interpolator_init(se3_interpolator_t* ret, const tptr_r t1, const tptr_r t2) {
     __so3_interpolator_init((so3_interpolator_t*) ret, t1, t2);
     memcpy(ret->t1, t1+9, sizeof(double)*3);
     __vo_subv(ret->dt, t2+9, t1+9, 3);
