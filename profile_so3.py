@@ -9,14 +9,14 @@ mat2 = so3.from_rotation_vector(v1);
 mat3 = [0]*9;
 c = 2
 
-NITER = 10000
+NITER = 1000
 ts = time.time()
 for i in range(NITER):
     mat3 = so3.mul(mat1, mat2)
 te = time.time()
 print(te - ts)
 
-NITER = 1000000
+NITER = 1000
 ts = time.time()
 for i in range(NITER):
     mat3 = _so3.mul(mat1, mat2)

@@ -23,7 +23,7 @@ PyObject* return_se3(const double* data) {
         return NULL;
     }
 #endif
-    PyObject* ret = Py_BuildValue("(OO)", rot, trans);
+    PyObject* ret = Py_BuildValue("(NN)", rot, trans);
 #ifdef MOTION_DEBUG
     if (ret == NULL) {
         Py_DECREF(trans);
@@ -66,7 +66,6 @@ int parse_se3 (double* dest, PyObject* vec) {
     if (parse_rotation(dest, curr)) {
         Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.
         Py_DECREF(it);
-        PyErr_SetString(PyExc_TypeError, "Could not parse rotation");
         return 1;
     }
     Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.
@@ -80,7 +79,6 @@ int parse_se3 (double* dest, PyObject* vec) {
     if (parse_vec3(dest+9, curr)) {
         Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.
         Py_DECREF(it);
-        PyErr_SetString(PyExc_TypeError, "Could not parse translation");
         return 1;
     }
     Py_DECREF(curr);    // Can't trigger gc cause container still exists. I think.

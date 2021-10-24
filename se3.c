@@ -254,7 +254,7 @@ PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t narg
         return NULL;
     }
 #endif
-    PyObject* result = Py_BuildValue("[OOOO]", l1, l2, l3, l4);
+    PyObject* result = Py_BuildValue("[NNNN]", l1, l2, l3, l4);
 #ifdef MOTION_DEBUG
     if (result == NULL) {
         Py_DECREF(l1);

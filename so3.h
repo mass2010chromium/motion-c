@@ -116,7 +116,7 @@ PyObject* __so3_matrix(double* buffer) {
         return NULL;
     }
 #endif
-    PyObject* result = Py_BuildValue("[OOO]", l1, l2, l3);
+    PyObject* result = Py_BuildValue("[NNN]", l1, l2, l3);
 #ifdef MOTION_DEBUG
     if (result == NULL) {
         Py_DECREF(l1);
