@@ -25,9 +25,26 @@ size_t Buffer_len(Buffer* s);
  * Also returns the new pointer if u want to use that instead.
  */
 Buffer* Buffer_cat(Buffer**, Buffer*);
+Buffer* Buffer_cats(Buffer**, const char*);
 void Buffer_push(Buffer**, char);
 char Buffer_pop(Buffer*);
 void Buffer_clear(Buffer*);
+
+/**
+ * Big endian buffer.
+ */
+void Buffer_push_short(Buffer**, int16_t);
+void Buffer_push_int(Buffer**, int32_t);
+void Buffer_push_double(Buffer**, double);
+void Buffer_push_long(Buffer**, int64_t);
+
+/**
+ * Same as above but no realloc.
+ */
+void Buffer_put_short(Buffer*, int16_t);
+void Buffer_put_int(Buffer*, int32_t);
+void Buffer_put_double(Buffer*, double);
+void Buffer_put_long(Buffer*, int64_t);
 
 /**
  * Delete character at index given (0-indexed) and returns it.

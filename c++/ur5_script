@@ -1,0 +1,215 @@
+stop program
+
+socket_send_string("close popup", "internal")
+socket_send_byte(10, "internal")
+
+def rtde_control_loop():
+    # Tare the FT sensor
+    zero_ftsensor()
+    # constants
+    SETPOINT_TIMEOUT  = 125
+    SETPOINT_NONE     = {setpoint_none}
+    SETPOINT_HALT     = {setpoint_halt}
+    SETPOINT_POSITION = {setpoint_position}
+    SETPOINT_VELOCITY = {setpoint_velocity}
+    SET_FREE_DRIVE    = {set_free_drive}
+    SETPOINT_WRENCH   = {setpoint_wrench}
+    CONTROL_PERIOD = 0.004
+    RTDE_WATCHDOG_FREQUENCY = 1
+
+    # robotiq gripper
+    GRIPPER_FLAG = {gripper_flag}
+
+    # integer registers
+    REG_SETPOINT = {reg_setpoint}
+    REG_TYPE = {reg_type}
+    REG_FREE_DRIVE_ACTIVE = {reg_free_drive_active}
+    REG_COMPLIANCE = {reg_compliance}
+    REG_ZERO_FTSENSOR = {reg_zero_ftsensor}
+
+    # input double registers
+    REG_TARGET = {reg_target}
+    REG_ACCELERATION = {reg_acceleration}
+    REG_LOOKAHEAD = {reg_lookahead}
+    REG_DAMPING = {reg_damping}
+    REG_GAIN = {reg_gain}
+    REG_G = {reg_g}
+    REG_LIMITS = {reg_limits}
+    REG_FORCE_TARGET = {reg_force_target}
+    REG_TASK_FRAME = {reg_task_frame}
+    
+    # output double registers
+    REG_JOINT_TORQUE = {reg_joint_torque}
+
+    # I/O configuration
+    set_standard_analog_input_domain(0, 1)
+    set_standard_analog_input_domain(1, 1)
+    set_tool_analog_input_domain(0, 1)
+    set_tool_analog_input_domain(1, 1)
+    set_analog_outputdomain(0, 0)
+    set_analog_outputdomain(1, 0)
+    set_input_actions_to_default()
+
+    if GRIPPER_FLAG:
+       set_tool_voltage(24)
+       set_tool_communication(True,115200,0,1,1.5,3.5)
+    else:
+       set_tool_voltage(0)
+    end
+
+    # tool configuration
+    set_payload_cog([{cog[0]}, {cog[1]}, {cog[2]}])
+    set_payload({payload})
+    set_gravity([{gravity[0]}, {gravity[1]}, {gravity[2]}])
+
+    setpoint_number = read_input_integer_register(REG_SETPOINT)
+    last_setpoint_number = setpoint_number
+    missed_setpoints = 0
+
+    # WHAT IS THIS FOR?
+    rtde_set_watchdog("input_int_register_0", RTDE_WATCHDOG_FREQUENCY, "stop")
+
+    in_force_mode = 0
+    tick_num = 0
+
+    while True:
+        setpoint_number = read_input_integer_register(REG_SETPOINT)
+        if setpoint_number == last_setpoint_number:
+            missed_setpoints = missed_setpoints + 1
+        else:
+            missed_setpoints = 0
+        end
+        tick_num = tick_num + 1
+        last_setpoint_number = setpoint_number
+
+        if missed_setpoints >= SETPOINT_TIMEOUT:
+            popup("setpoint timeout", title="PyUniversalRobot", error=True)
+            halt
+        end
+
+        should_zero = read_input_integer_register(REG_ZERO_FTSENSOR)
+        if should_zero == 1:
+            zero_ftsensor()
+        end
+
+        # update the setpoint
+        write_output_integer_register(0, setpoint_number)
+
+        joint_torques = get_joint_torques()
+        write_output_float_register(REG_JOINT_TORQUE + 0, joint_torques[0])
+        write_output_float_register(REG_JOINT_TORQUE + 1, joint_torques[1])
+        write_output_float_register(REG_JOINT_TORQUE + 2, joint_torques[2])
+        write_output_float_register(REG_JOINT_TORQUE + 3, joint_torques[3])
+        write_output_float_register(REG_JOINT_TORQUE + 4, joint_torques[4])
+        write_output_float_register(REG_JOINT_TORQUE + 5, joint_torques[5])
+
+        target = [0, 0, 0, 0, 0, 0]
+        target[0] = read_input_float_register(REG_TARGET + 0)
+        target[1] = read_input_float_register(REG_TARGET + 1)
+        target[2] = read_input_float_register(REG_TARGET + 2)
+        target[3] = read_input_float_register(REG_TARGET + 3)
+        target[4] = read_input_float_register(REG_TARGET + 4)
+        target[5] = read_input_float_register(REG_TARGET + 5)
+
+        G = [0,0,0]
+        G[0] = read_input_float_register(REG_G + 0)
+        G[1] = read_input_float_register(REG_G + 1)
+        G[2] = read_input_float_register(REG_G + 2)
+        set_gravity(G)
+
+        type = read_input_integer_register(REG_TYPE)
+        if type == SETPOINT_WRENCH:
+            if tick_num % 5 == 1:
+
+                force_mode_set_gain_scaling(2.0)
+
+                damping = read_input_float_register(REG_DAMPING)
+                force_mode_set_damping(damping)
+                # TODO: Write a helper?
+                compliance = [0, 0, 0, 0, 0, 0]
+                compliance[0] = read_input_integer_register(REG_COMPLIANCE + 0)
+                compliance[1] = read_input_integer_register(REG_COMPLIANCE + 1)
+                compliance[2] = read_input_integer_register(REG_COMPLIANCE + 2)
+                compliance[3] = read_input_integer_register(REG_COMPLIANCE + 3)
+                compliance[4] = read_input_integer_register(REG_COMPLIANCE + 4)
+                compliance[5] = read_input_integer_register(REG_COMPLIANCE + 5)
+                task_frame = p[0, 0, 0, 0, 0, 0]
+                task_frame[0] = read_input_float_register(REG_TASK_FRAME + 0)
+                task_frame[1] = read_input_float_register(REG_TASK_FRAME + 1)
+                task_frame[2] = read_input_float_register(REG_TASK_FRAME + 2)
+                task_frame[3] = read_input_float_register(REG_TASK_FRAME + 3)
+                task_frame[4] = read_input_float_register(REG_TASK_FRAME + 4)
+                task_frame[5] = read_input_float_register(REG_TASK_FRAME + 5)
+
+                # hardcoded for now...
+                limits     = [5, 5, 5, 5, 5, 5]
+                # limits[0] = read_input_float_register(REG_LIMITS + 0)
+                # limits[1] = read_input_float_register(REG_LIMITS + 1)
+                # limits[2] = read_input_float_register(REG_LIMITS + 2)
+                # limits[3] = read_input_float_register(REG_LIMITS + 3)
+                # limits[4] = read_input_float_register(REG_LIMITS + 4)
+                # limits[5] = read_input_float_register(REG_LIMITS + 5)
+
+                force_mode(task_frame, compliance, target, 2, limits)
+                in_force_mode = 1
+            end
+
+            if in_force_mode == 1:
+                target_pos = [0, 0, 0, 0, 0, 0]
+                target_pos[0] = read_input_float_register(REG_FORCE_TARGET + 0)
+                target_pos[1] = read_input_float_register(REG_FORCE_TARGET + 1)
+                target_pos[2] = read_input_float_register(REG_FORCE_TARGET + 2)
+                target_pos[3] = read_input_float_register(REG_FORCE_TARGET + 3)
+                target_pos[4] = read_input_float_register(REG_FORCE_TARGET + 4)
+                target_pos[5] = read_input_float_register(REG_FORCE_TARGET + 5)
+
+                # hardcoded for now...
+                lookahead = 0.02
+                gain = 300
+                acceleration = 10
+                #speedj(target_pos, acceleration, CONTROL_PERIOD)
+                servoj(target_pos, 0, 0, CONTROL_PERIOD, lookahead, gain)
+            end
+        elif in_force_mode == 1:
+            in_force_mode = 0
+            end_force_mode()
+        end
+
+        if type == SETPOINT_WRENCH:
+            do_nothing = 0
+        elif type == SET_FREE_DRIVE:
+            free_drive_active = read_input_integer_register(REG_FREE_DRIVE_ACTIVE)
+            if free_drive_active == 1:
+                freedrive_mode()
+            else:
+                end_freedrive_mode()
+            end
+        elif type == SETPOINT_HALT:
+            # issue command
+            popup("halt command issued", title="PyUniversalRobot", error=True)
+            halt
+        elif type == SETPOINT_POSITION:
+            # read lookahead and gain parameters
+            lookahead = read_input_float_register(REG_LOOKAHEAD)
+            if lookahead > 0.2:
+                # In case we transitioned partially from force mode to position mode
+                lookahead = 0.2
+            end
+            gain = read_input_float_register(REG_GAIN)
+
+            # issue command
+            # NOTE: acceleration and velocity arguments are ignored
+            servoj(target, 0, 0, CONTROL_PERIOD, lookahead, gain)
+        elif type == SETPOINT_VELOCITY:
+            # read acceleration parameter
+            acceleration = read_input_float_register(REG_ACCELERATION)
+
+            # issue command
+            speedj(target, acceleration, CONTROL_PERIOD)
+        else:
+            # alert and quit
+            popup("unknown setpoint type received", title="PyUniversalRobot", error=True)
+            halt
+        end
+    end
+end

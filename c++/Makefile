@@ -3,5 +3,5 @@ CXXFLAGS = -I ../extern/pybind11/include $(shell python3-config --cflags) -Wall 
 PY_SUFFIX = $(shell python3-config --extension-suffix)
 
 all:
-	$(CXX) $(CFLAGS) rtde.cpp -o rtde$(PY_SUFFIX) $(CXXFLAGS)
+	$(CXX) $(CFLAGS) ur5controller.cpp -o ur5controller$(PY_SUFFIX) $(CXXFLAGS)
 
