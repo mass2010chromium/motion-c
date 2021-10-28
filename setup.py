@@ -8,22 +8,26 @@ so3_macros = [
         ('SO3_RESTRICT', None),
     ]
 
+rtde_macros = [
+        ('RTDE_PROTOCOL_VERSION', 2)
+    ]
 
-ur = Extension('motion.ur5controller',
-                    sources = ['ur5controller.c'],
+
+ur = Extension('Motion.ur5controller',
+                    sources = ['c/ur5controller.c'],
                     extra_compile_args = ["-O3"],
                     define_macros=all_macros)
-vo = Extension('motion.vectorops',
-                    sources = ['vectorops.c'],
+vo = Extension('motionlib.vectorops',
+                    sources = ['c/vectorops.c'],
                     extra_compile_args = ["-O3"],
                     define_macros = all_macros + vo_macros)
 
-so3 = Extension('motion.so3',
-                    sources = ['so3.c'],
+so3 = Extension('motionlib.so3',
+                    sources = ['c/so3.c'],
                     extra_compile_args = ["-O3"],
                     define_macros = all_macros + so3_macros)
-se3 = Extension('motion.se3',
-                    sources = ['se3.c'],
+se3 = Extension('motionlib.se3',
+                    sources = ['c/se3.c'],
                     extra_compile_args = ["-O3"],
                     define_macros = all_macros + vo_macros + so3_macros + [
                             ('SE3_RESTRICT', None),
