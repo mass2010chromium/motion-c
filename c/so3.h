@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+#include <string.h>
 #include "utils.h"
 #include "vectorops.h"
 
@@ -11,6 +12,7 @@
 #define rptr_r motion_dtype*
 #endif
 
+#ifdef PYTHON
 #ifdef MOTION_DEBUG
 #ifdef SO3_STRICT
 #define PARSE_VEC_FIX(name, len) \
@@ -50,6 +52,9 @@ static inline int parse_ ## name (rptr_r dest, PyObject* vec) { \
     return list_to_vector(vec, dest); \
 }
 #endif
+#else
+#define PARSE_VEC_FIX(name, len)
+#endif // PYTHON
 
 PARSE_VEC_FIX(rotation, 9);
 PARSE_VEC_FIX(vec3, 3);
@@ -279,8 +284,8 @@ static inline void __so3_rpy(rptr_r dest, const rptr_r rot) {
  */
 PY_FUNC(PyObject* so3_from_rpy(PyObject* self, PyObject* args));
 
-void __so3_rotation(rptr_r dest, const vptr_r axis, motion_dtype angle);
-void __so3_deskew(vptr_r dest, const rptr_r rot);
+static void __so3_rotation(rptr_r dest, const vptr_r axis, motion_dtype angle);
+static void __so3_deskew(vptr_r dest, const rptr_r rot);
 
 static inline void __so3_from_rpy(motion_dtype* dest, const motion_dtype* rpy) {
     motion_dtype Rx[9];
@@ -399,7 +404,7 @@ PY_FUNC(PyObject* so3_from_rotation_vector(PyObject* self, PyObject* args));
  */
 PY_FUNC(PyObject* so3_from_quaternion(PyObject* self, PyObject* args));
 
-static inline void __so3_from_quaternion(rptr_r rot, const motion_dtype* restrict q) {
+static inline void __so3_from_quaternion(rptr_r rot, const motion_dtype* q) {
     motion_dtype w = q[0], x = q[1], y = q[2], z = q[3];
 
     motion_dtype x2 = x + x,  y2 = y + y,  z2 = z + z;
@@ -423,7 +428,7 @@ static inline void __so3_from_quaternion(rptr_r rot, const motion_dtype* restric
  */
 PY_FUNC(PyObject* so3_quaternion(PyObject* self, PyObject* args));
 
-static inline int __so3_quaternion(motion_dtype* restrict q, const rptr_r rot) {
+static inline int __so3_quaternion(motion_dtype* q, const rptr_r rot) {
     motion_dtype tr = __so3_trace(rot) + 1.0;
 
     if (tr > 1e-5) {
