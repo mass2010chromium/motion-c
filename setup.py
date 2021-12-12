@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 
-all_macros = [('MOTION_DEBUG', None)]
-#all_macros = []
+#all_macros = [('MOTION_DEBUG', None), ('PYTHON', None)]
+all_macros = [('PYTHON', None)]
 vo_macros = [] #[('VO_RESTRICT', None)]
 so3_macros = [
         ('SO3_STRICT', None),

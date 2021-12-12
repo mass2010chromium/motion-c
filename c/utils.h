@@ -2,10 +2,20 @@
 
 //#define CASE_3_6
 
+#ifndef motion_dtype
+#define motion_dtype double
+#endif
+
+#ifdef PYTHON
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#define PY_FUNC(x) (x)
+#else
+#define PY_FUNC(x)
+#endif
 
 #include <math.h>
+#include <stdlib.h>
 
 #ifdef MOTION_DEBUG
 #include <assert.h>
@@ -14,14 +24,15 @@
 #define _assert(x) ((void) (x))
 #endif
 
+PY_FUNC(
 /**
  * Create a new list from a C array.
  * Return value: new reference
  */
 #ifndef MOTION_DEBUG
-inline
+static inline
 #endif
-PyObject* vector_to_list(const double* vec, Py_ssize_t size) {
+PyObject* vector_to_list(const motion_dtype* vec, Py_ssize_t size) {
     PyObject* ret = PyList_New(size);
 #ifdef MOTION_DEBUG
     if (ret == NULL) {
@@ -47,9 +58,9 @@ PyObject* vector_to_list(const double* vec, Py_ssize_t size) {
  * passes a object with spoofed len() lol
  */
 #ifndef MOTION_DEBUG
-inline
+static inline
 #endif
-int list_to_vector(PyObject* list, double* vec) {
+int list_to_vector(PyObject* list, motion_dtype* vec) {
     PyObject* it = PyObject_GetIter(list);
 #ifdef MOTION_DEBUG
     if (it == NULL) {
@@ -58,7 +69,7 @@ int list_to_vector(PyObject* list, double* vec) {
 #endif
 
     PyObject* curr;
-    double* head = vec;
+    motion_dtype* head = vec;
     while ((curr = PyIter_Next(it))) {
 #ifdef MOTION_DEBUG
         if (curr == NULL) {
@@ -82,9 +93,9 @@ int list_to_vector(PyObject* list, double* vec) {
  * Returns NULL on failure, or the iterator handle on success.
  */
 #ifndef MOTION_DEBUG
-inline
+static inline
 #endif
-PyObject* list_to_vector_n(PyObject* list, double* vec, int n) {
+PyObject* list_to_vector_n(PyObject* list, motion_dtype* vec, int n) {
     PyObject* it = PyObject_GetIter(list);
 #ifdef MOTION_DEBUG
     if (it == NULL) {
@@ -93,7 +104,7 @@ PyObject* list_to_vector_n(PyObject* list, double* vec, int n) {
 #endif
 
     PyObject* curr;
-    double* head = vec;
+    motion_dtype* head = vec;
     for (int i = 0; i < n; ++i) {
         curr = PyIter_Next(it);
 #ifdef MOTION_DEBUG
@@ -113,10 +124,12 @@ PyObject* list_to_vector_n(PyObject* list, double* vec, int n) {
     return it;
 }
 
+)   // PY_FUNC
+
 /**
  * Signum, written to match Klampt
  */
-inline int signum(double x) {
+static inline int signum(motion_dtype x) {
     if (x > 0) return 1;
     if (x < 0) return -1;
     return 0;
@@ -125,7 +138,7 @@ inline int signum(double x) {
 /**
  * Clamp to +1 and -1 for trig
  */
-inline double clamp_unity(double x) {
+static inline motion_dtype clamp_unity(motion_dtype x) {
     if (x > 1.0) return 1.0;
     if (x < -1.0) return -1.0;
     return x;
@@ -138,12 +151,12 @@ inline double clamp_unity(double x) {
  * Source: https://stackoverflow.com/a/10645091
  * Optionally returns a second value through the pointer.
  */
-double sampleNormal(double* b) {
-    double u = ((double) rand() / (RAND_MAX)) * 2 - 1;
-    double v = ((double) rand() / (RAND_MAX)) * 2 - 1;
-    double r = u * u + v * v;
+motion_dtype sampleNormal(motion_dtype * b) {
+    motion_dtype u = ((motion_dtype) rand() / (RAND_MAX)) * 2 - 1;
+    motion_dtype v = ((motion_dtype) rand() / (RAND_MAX)) * 2 - 1;
+    motion_dtype r = u * u + v * v;
     if (r == 0 || r > 1) return sampleNormal(b);
-    double c = sqrt(-2 * log(r) / r);
+    motion_dtype c = sqrt(-2 * log(r) / r);
     if (b) *b = v * c;
     return u * c;
 }

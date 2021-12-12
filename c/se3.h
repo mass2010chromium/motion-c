@@ -1,18 +1,18 @@
 #pragma once
 
-#include <Python.h>
-
 #include <math.h>
+#include "utils.h"
 #include "vectorops.h"
 #include "so3.h"
 
-#define tptr double*
+#define tptr motion_dtype*
 #ifdef SE3_RESTRICT
-#define tptr_r double* restrict
+#define tptr_r motion_dtype* restrict
 #else
-#define tptr_r double*
+#define tptr_r motion_dtype*
 #endif
 
+PY_FUNC(
 #ifndef MOTION_DEBUG
 inline
 #endif
@@ -40,7 +40,9 @@ PyObject* return_se3(const tptr_r data) {
 #endif
     return ret;
 }
+)
 
+PY_FUNC(
 #ifndef MOTION_DEBUG
 inline
 #endif
@@ -92,18 +94,19 @@ int parse_se3 (tptr_r dest, PyObject* vec) {
     Py_DECREF(it);
     return 0;
 }
+)
 
-const double SE3_ID[12] = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
+const motion_dtype SE3_ID[12] = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
 
 /**
  * Returns the identity transformation.
  */
-PyObject* se3_identity(PyObject* self, PyObject* args);
+PY_FUNC(PyObject* se3_identity(PyObject* self, PyObject* args));
 
 /**
  * Returns the inverse of the transformation.
  */
-PyObject* se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 inline void __se3_inv(tptr_r ret, const tptr_r transform) {
     __so3_inv(ret, transform);
@@ -114,7 +117,7 @@ inline void __se3_inv(tptr_r ret, const tptr_r transform) {
 /**
  * Applies the transform T to the given point
  */
-PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 inline void __se3_apply(vptr_r ret, const tptr_r transform, const vptr_r point) {
     __so3_apply(ret, transform, point);
@@ -124,42 +127,42 @@ inline void __se3_apply(vptr_r ret, const tptr_r transform, const vptr_r point) 
 /**
  * Applies only the rotation part of T
  */
-PyObject* se3_apply_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_apply_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns the 3x3 rotation matrix corresponding to T's rotation
  */
-PyObject* se3_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns a transformation T corresponding to the 3x3 rotation matrix mat
  */
-PyObject* se3_from_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_from_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns the translation vector corresponding to T's translation
  */
-PyObject* se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns a transformation T that translates points by t
  */
-PyObject* se3_from_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_from_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns the 4x4 homogeneous transform corresponding to T
  */
-PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Returns a T corresponding to the 4x4 homogeneous transform mat
  */
-PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 /**
  * Composes two transformations.
  */
-PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 inline void __se3_mul(tptr_r ret, const tptr_r t1, const tptr_r t2) {
     __so3_mul(ret, t1, t2);
@@ -170,10 +173,10 @@ inline void __se3_mul(tptr_r ret, const tptr_r t1, const tptr_r t2) {
 /**
  * Returns a distance metric between the two transformations. The rotation distance is weighted by Rweight and the translation distance is weighted by tweight
  */
-PyObject* se3_distance(PyObject* self, PyObject* args, PyObject* kwargs);
+PY_FUNC(PyObject* se3_distance(PyObject* self, PyObject* args, PyObject* kwargs));
 
-inline double __se3_distance(const tptr_r t1, const tptr_r t2,
-                             double rweight, double tweight) {
+inline motion_dtype __se3_distance(const tptr_r t1, const tptr_r t2,
+                             motion_dtype rweight, motion_dtype tweight) {
     return __so3_distance(t1, t2) * rweight
          + __vo_distance(t1+9, t2+9, 3) * tweight;
 }
@@ -181,7 +184,7 @@ inline double __se3_distance(const tptr_r t1, const tptr_r t2,
 /**
  * Returns a 6D "difference vector" that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).
  */
-PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
 inline void __se3_error(vptr_r ret, const tptr_r t1, const tptr_r t2) {
     __so3_error(ret, t1, t2);
@@ -191,24 +194,24 @@ inline void __se3_error(vptr_r ret, const tptr_r t1, const tptr_r t2) {
 /**
  * Interpolate linearly between the two transformations T1 and T2.
  */
-PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-inline void __se3_interpolate(tptr_r ret, const tptr_r t1, const tptr_r t2, double u) {
+inline void __se3_interpolate(tptr_r ret, const tptr_r t1, const tptr_r t2, motion_dtype u) {
     __so3_interpolate(ret, t1, t2, u);
     __vo_interpolate(ret+3, t1+9, t2+9, u, 3);
 }
 
 typedef struct {
-    double rot[9];
-    double axis[3];
-    double angle;
-    double t1[3];
-    double dt[3];
+    motion_dtype rot[9];
+    motion_dtype axis[3];
+    motion_dtype angle;
+    motion_dtype t1[3];
+    motion_dtype dt[3];
 } se3_interpolator_t;
 
 inline void __se3_interpolator_init(se3_interpolator_t* ret, const tptr_r t1, const tptr_r t2) {
     __so3_interpolator_init((so3_interpolator_t*) ret, t1, t2);
-    memcpy(ret->t1, t1+9, sizeof(double)*3);
+    memcpy(ret->t1, t1+9, sizeof(motion_dtype)*3);
     __vo_subv(ret->dt, t2+9, t1+9, 3);
 }
 
@@ -218,4 +221,4 @@ inline void __se3_interpolator_init(se3_interpolator_t* ret, const tptr_r t1, co
  * 
  * After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).
  */
-PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs);
+PY_FUNC(PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
