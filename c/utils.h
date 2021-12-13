@@ -151,7 +151,7 @@ static inline motion_dtype clamp_unity(motion_dtype x) {
  * Source: https://stackoverflow.com/a/10645091
  * Optionally returns a second value through the pointer.
  */
-motion_dtype sampleNormal(motion_dtype * b) {
+static inline motion_dtype sampleNormal(motion_dtype * b) {
     motion_dtype u = ((motion_dtype) rand() / (RAND_MAX)) * 2 - 1;
     motion_dtype v = ((motion_dtype) rand() / (RAND_MAX)) * 2 - 1;
     motion_dtype r = u * u + v * v;
