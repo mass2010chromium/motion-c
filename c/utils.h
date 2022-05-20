@@ -9,7 +9,7 @@
 #ifdef PYTHON
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#define PY_FUNC(x) (x)
+#define PY_FUNC(x) x
 #else
 #define PY_FUNC(x)
 #endif
@@ -64,6 +64,7 @@ int list_to_vector(PyObject* list, motion_dtype* vec) {
     PyObject* it = PyObject_GetIter(list);
 #ifdef MOTION_DEBUG
     if (it == NULL) {
+        PyErr_SetString(PyExc_TypeError, "Failed to get iterator");
         return 1;
     }
 #endif

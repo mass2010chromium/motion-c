@@ -475,8 +475,8 @@ PyObject* vectorops_cross(PyObject* self, PyObject* const* args, Py_ssize_t narg
     }
 #ifdef MOTION_DEBUG
     PyErr_SetString(PyExc_ValueError, "crossprod only valid for 2 or 3D");
-    return NULL;
 #endif
+    return NULL;
 }
 
 /**

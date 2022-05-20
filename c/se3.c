@@ -278,8 +278,8 @@ PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t
     }
 #endif
     PyObject* rot = args[0];
-    Py_ssize_t n;
 #ifdef MOTION_DEBUG
+    Py_ssize_t n;
     n = PyObject_Length(rot);
 #ifdef SO3_STRICT
     if (n != 4)
