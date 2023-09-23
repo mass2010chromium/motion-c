@@ -121,7 +121,7 @@ PY_FUNC(PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t na
 
 static inline void __se3_apply(vptr_r ret, const tptr_r transform, const vptr_r point) {
     __so3_apply(ret, transform, point);
-    __vo_add(ret, ret, transform+9, 3);
+    __vo_addv(ret, ret, transform+9, 3);
 }
 
 /**
@@ -167,7 +167,7 @@ PY_FUNC(PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t narg
 static inline void __se3_mul(tptr_r ret, const tptr_r t1, const tptr_r t2) {
     __so3_mul(ret, t1, t2);
     __so3_apply(ret+9, t1, t2+9);
-    __vo_add(ret+9, ret+9, t1+9, 3);
+    __vo_addv(ret+9, ret+9, t1+9, 3);
 }
 
 /**

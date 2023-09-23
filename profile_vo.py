@@ -1,5 +1,5 @@
-from klampt.math import vectorops as vo1
-import motion.vectorops as vo2
+#from klampt.math import vectorops as vo1
+import motionlib.vectorops as vo2
 import numpy as np
 import numpy.linalg as la
 import time
@@ -13,13 +13,13 @@ v1 += v1
 v2 += v2
 
 NITER = 10000
-ts = time.time()
-for i in range(NITER):
-    v3 = vo1.madd(v1, v2, c)
-    c = vo1.norm(v2)
-    #v3 = vo1.add(v1, v2)
-te = time.time()
-print(te - ts)
+#ts = time.time()
+#for i in range(NITER):
+#    v3 = vo1.madd(v1, v2, c)
+#    c = vo1.norm(v2)
+#    #v3 = vo1.add(v1, v2)
+#te = time.time()
+#print(te - ts)
 
 ts = time.time()
 for i in range(NITER):

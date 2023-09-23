@@ -11,40 +11,6 @@
 #define vptr_r motion_dtype*
 #endif
 
-/**
- * Adds one or more vectors.
- */
-PY_FUNC(PyObject* vectorops_add(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
-
-static inline void __vo_add(vptr dest, const vptr a, const vptr b, int len) {
-    switch(len) {
-#ifdef CASE_3_6
-        case 9:
-            dest[8] = a[8] + b[8];
-        case 8:
-            dest[7] = a[7] + b[7];
-        case 7:
-            dest[6] = a[6] + b[6];
-        case 6:
-            dest[5] = a[5] + b[5];
-        case 5:
-            dest[4] = a[4] + b[4];
-        case 4:
-            dest[3] = a[3] + b[3];
-        case 3:
-            dest[2] = a[2] + b[2];
-        case 2:
-            dest[1] = a[1] + b[1];
-        case 1:
-            dest[0] = a[0] + b[0];
-            return;
-#endif
-        default:
-            for (int i = 0; i < len; ++i) {
-                dest[i] = a[i] + b[i];
-            }
-    }
-}
 
 /**
  * Return a+c*b where a and b are vectors.
@@ -158,6 +124,12 @@ static inline void __vo_ ## name ## v (vptr dest, const vptr a, const vptr b, in
 }
 
 #endif
+
+/**
+ * Add a vector b to a, or add a scalar
+ */
+#define __VO_ADD(a, b) (a) + (b)
+__VO_BINOP_DECL(add, __VO_ADD)
 
 /**
  * Subtract a vector b from a, or subtract a scalar

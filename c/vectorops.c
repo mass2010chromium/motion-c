@@ -96,7 +96,7 @@ PyObject* vectorops_add(PyObject* self, PyObject* const* args, Py_ssize_t nargs)
         if (list_to_vector(element, buffer2)) {
             return NULL;
         }
-        __vo_add(buffer, buffer, buffer2, n);
+        __vo_addv(buffer, buffer, buffer2, n);
     }
     return vector_to_list(buffer, n);
 }
