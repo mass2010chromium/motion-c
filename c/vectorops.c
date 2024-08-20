@@ -191,6 +191,9 @@ PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t 
         return vector_to_list(buffer, n); \
     } \
     double buffer2[n]; \
+    if (list_to_vector(b, buffer2)) { \
+        return NULL; \
+    } \
     __vo_ ## name ## v (buffer, buffer, buffer2, n); \
     return vector_to_list(buffer, n); \
 }
