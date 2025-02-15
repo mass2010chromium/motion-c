@@ -9,65 +9,65 @@
 #include "vectorops.h"
 #include "so3.h"
 
-PyDoc_STRVAR(se3_identity_doc, "Returns the identity transformation");
-PyDoc_STRVAR(se3_inv_doc, "Returns the inverse of the transformation.");
-PyDoc_STRVAR(se3_apply_doc, "Applies the transform T to the given point");
-PyDoc_STRVAR(se3_apply_rotation_doc, "Applies only the rotation part of T");
-PyDoc_STRVAR(se3_rotation_doc, "Returns the 3x3 rotation matrix corresponding to T's rotation");
-PyDoc_STRVAR(se3_from_rotation_doc, "Returns a transformation T corresponding to the 3x3 rotation matrix mat");
-PyDoc_STRVAR(se3_translation_doc, "Returns the translation vector corresponding to T's translation");
-PyDoc_STRVAR(se3_from_translation_doc, "Returns a transformation T that translates points by t");
-PyDoc_STRVAR(se3_homogeneous_doc, "Returns the 4x4 homogeneous transform corresponding to T");
-PyDoc_STRVAR(se3_from_homogeneous_doc, "Returns a T corresponding to the 4x4 homogeneous transform mat");
-PyDoc_STRVAR(se3_mul_doc, "Composes two transformations.");
-PyDoc_STRVAR(se3_distance_doc, "Returns a distance metric between the two transformations. The rotation distance is weighted by Rweight and the translation distance is weighted by tweight");
-PyDoc_STRVAR(se3_error_doc, "Returns a 6D 'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
-PyDoc_STRVAR(se3_interpolate_doc, "Interpolate linearly between the two transformations T1 and T2.'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
-PyDoc_STRVAR(se3_interpolator_doc, "Returns a function of one parameter u that interpolates linearly between the two transformations T1 and T2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
+PyDoc_STRVAR(py_se3_identity_doc, "Returns the identity transformation");
+PyDoc_STRVAR(py_se3_inv_doc, "Returns the inverse of the transformation.");
+PyDoc_STRVAR(py_se3_apply_doc, "Applies the transform T to the given point");
+PyDoc_STRVAR(py_se3_apply_rotation_doc, "Applies only the rotation part of T");
+PyDoc_STRVAR(py_se3_rotation_doc, "Returns the 3x3 rotation matrix corresponding to T's rotation");
+PyDoc_STRVAR(py_se3_from_rotation_doc, "Returns a transformation T corresponding to the 3x3 rotation matrix mat");
+PyDoc_STRVAR(py_se3_translation_doc, "Returns the translation vector corresponding to T's translation");
+PyDoc_STRVAR(py_se3_from_translation_doc, "Returns a transformation T that translates points by t");
+PyDoc_STRVAR(py_se3_homogeneous_doc, "Returns the 4x4 homogeneous transform corresponding to T");
+PyDoc_STRVAR(py_se3_from_homogeneous_doc, "Returns a T corresponding to the 4x4 homogeneous transform mat");
+PyDoc_STRVAR(py_se3_mul_doc, "Composes two transformations.");
+PyDoc_STRVAR(py_se3_distance_doc, "Returns a distance metric between the two transformations. The rotation distance is weighted by Rweight and the translation distance is weighted by tweight");
+PyDoc_STRVAR(py_se3_error_doc, "Returns a 6D 'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
+PyDoc_STRVAR(py_se3_interpolate_doc, "Interpolate linearly between the two transformations T1 and T2.'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
+PyDoc_STRVAR(py_se3_interpolator_doc, "Returns a function of one parameter u that interpolates linearly between the two transformations T1 and T2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).'difference vector' that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).");
 
-static PyMethodDef se3Methods[] = {
-    {"identity", se3_identity, METH_NOARGS, se3_identity_doc},
-    {"inv", (PyCFunction) se3_inv, METH_FASTCALL, se3_inv_doc},
-    {"apply", (PyCFunction) se3_apply, METH_FASTCALL, se3_apply_doc},
-    {"apply_rotation", (PyCFunction) se3_apply_rotation, METH_FASTCALL, se3_apply_rotation_doc},
-    {"rotation", (PyCFunction) se3_rotation, METH_FASTCALL, se3_rotation_doc},
-    {"from_rotation", (PyCFunction) se3_from_rotation, METH_FASTCALL, se3_from_rotation_doc},
-    {"translation", (PyCFunction) se3_translation, METH_FASTCALL, se3_translation_doc},
-    {"from_translation", (PyCFunction) se3_from_translation, METH_FASTCALL, se3_from_translation_doc},
-    {"homogeneous", (PyCFunction) se3_homogeneous, METH_FASTCALL, se3_homogeneous_doc},
-    {"from_homogeneous", (PyCFunction) se3_from_homogeneous, METH_FASTCALL, se3_from_homogeneous_doc},
-    {"mul", (PyCFunction) se3_mul, METH_FASTCALL, se3_mul_doc},
-    {"distance", (PyCFunction) se3_distance, METH_VARARGS | METH_KEYWORDS, se3_distance_doc},
-    {"error", (PyCFunction) se3_error, METH_FASTCALL, se3_error_doc},
-    {"interpolate", (PyCFunction) se3_interpolate, METH_FASTCALL, se3_interpolate_doc},
-    {"interpolator", (PyCFunction) se3_interpolator, METH_FASTCALL, se3_interpolator_doc},
+static PyMethodDef py_se3Methods[] = {
+    {"identity", py_se3_identity, METH_NOARGS, py_se3_identity_doc},
+    {"inv", (PyCFunction) py_se3_inv, METH_FASTCALL, py_se3_inv_doc},
+    {"apply", (PyCFunction) py_se3_apply, METH_FASTCALL, py_se3_apply_doc},
+    {"apply_rotation", (PyCFunction) py_se3_apply_rotation, METH_FASTCALL, py_se3_apply_rotation_doc},
+    {"rotation", (PyCFunction) py_se3_rotation, METH_FASTCALL, py_se3_rotation_doc},
+    {"from_rotation", (PyCFunction) py_se3_from_rotation, METH_FASTCALL, py_se3_from_rotation_doc},
+    {"translation", (PyCFunction) py_se3_translation, METH_FASTCALL, py_se3_translation_doc},
+    {"from_translation", (PyCFunction) py_se3_from_translation, METH_FASTCALL, py_se3_from_translation_doc},
+    {"homogeneous", (PyCFunction) py_se3_homogeneous, METH_FASTCALL, py_se3_homogeneous_doc},
+    {"from_homogeneous", (PyCFunction) py_se3_from_homogeneous, METH_FASTCALL, py_se3_from_homogeneous_doc},
+    {"mul", (PyCFunction) py_se3_mul, METH_FASTCALL, py_se3_mul_doc},
+    {"distance", (PyCFunction) py_se3_distance, METH_VARARGS | METH_KEYWORDS, py_se3_distance_doc},
+    {"error", (PyCFunction) py_se3_error, METH_FASTCALL, py_se3_error_doc},
+    {"interpolate", (PyCFunction) py_se3_interpolate, METH_FASTCALL, py_se3_interpolate_doc},
+    {"interpolator", (PyCFunction) py_se3_interpolator, METH_FASTCALL, py_se3_interpolator_doc},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef se3Module = {
+static struct PyModuleDef py_se3Module = {
     PyModuleDef_HEAD_INIT,
     "motion.se3",
     NULL,   // Documentation
     -1,     /* size of per-interpreter state of the module,
                 or -1 if the module keeps state in global variables. */
-    se3Methods
+    py_se3Methods
 };
 
 PyMODINIT_FUNC PyInit_se3() {
-    return PyModule_Create(&se3Module);
+    return PyModule_Create(&py_se3Module);
 }
 
 /**
  * Returns the identity transformation.
  */
-PyObject* se3_identity(PyObject* self, PyObject* args) {
-    return return_se3(SE3_ID);
+PyObject* py_se3_identity(PyObject* self, PyObject* args) {
+    return return_py_se3(SE3_ID);
 }
 
 /**
  * Returns the inverse of the transformation.
  */
-PyObject* se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -76,17 +76,17 @@ PyObject* se3_inv(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #endif
     double data[12];
     double ret[12];
-    if (parse_se3(data, args[0])) {
+    if (parse_py_se3(data, args[0])) {
         return NULL;
     }
-    __se3_inv(ret, data);
-    return return_se3(ret);
+    se3_inv(ret, data);
+    return return_py_se3(ret);
 }
 
 /**
  * Applies the transform T to the given point
  */
-PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
@@ -96,20 +96,20 @@ PyObject* se3_apply(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
     double transform[12];
     double point[3];
     double ret[3];
-    if (parse_se3(transform, args[0])) {
+    if (parse_py_se3(transform, args[0])) {
         return NULL;
     }
     if (parse_vec3(point, args[1])) {
         return NULL;
     }
-    __se3_apply(ret, transform, point);
+    se3_apply(ret, transform, point);
     return vector_to_list(ret, 3);
 }
 
 /**
  * Applies only the rotation part of T
  */
-PyObject* se3_apply_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_apply_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
@@ -119,20 +119,20 @@ PyObject* se3_apply_rotation(PyObject* self, PyObject* const* args, Py_ssize_t n
     double transform[12];
     double point[3];
     double ret[3];
-    if (parse_se3(transform, args[0])) {
+    if (parse_py_se3(transform, args[0])) {
         return NULL;
     }
     if (parse_vec3(point, args[1])) {
         return NULL;
     }
-    __so3_apply(ret, transform, point);
+    so3_apply(ret, transform, point);
     return vector_to_list(ret, 3);
 }
 
 /**
  * Returns the 3x3 rotation matrix corresponding to T's rotation
  */
-PyObject* se3_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -140,16 +140,16 @@ PyObject* se3_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) 
     }
 #endif
     double transform[12];
-    if (parse_se3(transform, args[0])) {
+    if (parse_py_se3(transform, args[0])) {
         return NULL;
     }
-    return __so3_matrix(transform);
+    return so3_matrix(transform);
 }
 
 /**
  * Returns a transformation T corresponding to the 3x3 rotation matrix mat
  */
-PyObject* se3_from_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_from_rotation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -157,19 +157,19 @@ PyObject* se3_from_rotation(PyObject* self, PyObject* const* args, Py_ssize_t na
     }
 #endif
     double transform[12];
-    if (__so3_from_matrix(transform, args[0])) {
+    if (so3_from_matrix(transform, args[0])) {
         return NULL;
     }
     transform[9] = 0;
     transform[10] = 0;
     transform[11] = 0;
-    return return_se3(transform);
+    return return_py_se3(transform);
 }
 
 /**
  * Returns the translation vector corresponding to T's translation
  */
-PyObject* se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -177,7 +177,7 @@ PyObject* se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t narg
     }
 #endif
     double transform[12];
-    if (parse_se3(transform, args[0])) {
+    if (parse_py_se3(transform, args[0])) {
         return NULL;
     }
     return vector_to_list(transform+9, 3);
@@ -186,7 +186,7 @@ PyObject* se3_translation(PyObject* self, PyObject* const* args, Py_ssize_t narg
 /**
  * Returns a transformation T that translates points by t
  */
-PyObject* se3_from_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_from_translation(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -197,13 +197,13 @@ PyObject* se3_from_translation(PyObject* self, PyObject* const* args, Py_ssize_t
     if (parse_vec3(transform+9, args[0])) {
         return NULL;
     }
-    return return_se3(transform);
+    return return_py_se3(transform);
 }
 
 /**
  * Returns the 4x4 homogeneous transform corresponding to T
  */
-PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -211,11 +211,11 @@ PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t narg
     }
 #endif
     double transform[12];
-    if (parse_se3(transform, args[0])) {
+    if (parse_py_se3(transform, args[0])) {
         return NULL;
     }
     double scratch[10];
-    __so3_inv(scratch, transform);
+    so3_inv(scratch, transform);
     double tmp = scratch[3];
     scratch[3] = transform[9];
     PyObject* l1 = vector_to_list(scratch, 4);
@@ -270,7 +270,7 @@ PyObject* se3_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t narg
 /**
  * Returns a T corresponding to the 4x4 homogeneous transform mat
  */
-PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -355,14 +355,14 @@ PyObject* se3_from_homogeneous(PyObject* self, PyObject* const* args, Py_ssize_t
         Py_DECREF(curr);
     }
     Py_DECREF(it);
-    __so3_inv(output, buf);
-    return return_se3(output);
+    so3_inv(output, buf);
+    return return_py_se3(output);
 }
 
 /**
  * Composes two transformations.
  */
-PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
@@ -372,20 +372,20 @@ PyObject* se3_mul(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
     double t1[12];
     double t2[12];
     double ret[12];
-    if (parse_se3(t1, args[0])) {
+    if (parse_py_se3(t1, args[0])) {
         return NULL;
     }
-    if (parse_se3(t2, args[1])) {
+    if (parse_py_se3(t2, args[1])) {
         return NULL;
     }
-    __se3_mul(ret, t1, t2);
-    return return_se3(ret);
+    se3_mul(ret, t1, t2);
+    return return_py_se3(ret);
 }
 
 /**
  * Returns a distance metric between the two transformations. The rotation distance is weighted by Rweight and the translation distance is weighted by tweight
  */
-PyObject* se3_distance(PyObject* self, PyObject* args, PyObject* kwargs) {
+PyObject* py_se3_distance(PyObject* self, PyObject* args, PyObject* kwargs) {
     static char* kwlist[] = {"Rweight", "tweight"};
     PyObject* _t1;
     PyObject* _t2;
@@ -397,19 +397,19 @@ PyObject* se3_distance(PyObject* self, PyObject* args, PyObject* kwargs) {
     }
     double t1[12];
     double t2[12];
-    if (parse_se3(t1, _t1)) {
+    if (parse_py_se3(t1, _t1)) {
         return NULL;
     }
-    if (parse_se3(t2, _t2)) {
+    if (parse_py_se3(t2, _t2)) {
         return NULL;
     }
-    return PyFloat_FromDouble(__se3_distance(t1, t2, rweight, tweight));
+    return PyFloat_FromDouble(se3_distance(t1, t2, rweight, tweight));
 }
 
 /**
  * Returns a 6D "difference vector" that describes how far T1 is from T2. More precisely, this is the Lie derivative (w,v).
  */
-PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
@@ -419,20 +419,20 @@ PyObject* se3_error(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
     double t1[12];
     double t2[12];
     double ret[6];
-    if (parse_se3(t1, args[0])) {
+    if (parse_py_se3(t1, args[0])) {
         return NULL;
     }
-    if (parse_se3(t2, args[1])) {
+    if (parse_py_se3(t2, args[1])) {
         return NULL;
     }
-    __se3_error(ret, t1, t2);
+    se3_error(ret, t1, t2);
     return vector_to_list(ret, 6);
 }
 
 /**
  * Interpolate linearly between the two transformations T1 and T2.
  */
-PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 3) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 3)");
@@ -448,21 +448,21 @@ PyObject* se3_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t narg
     double t1[12];
     double t2[12];
     double ret[12];
-    if (parse_se3(t1, args[0])) {
+    if (parse_py_se3(t1, args[0])) {
         return NULL;
     }
-    if (parse_se3(t2, args[1])) {
+    if (parse_py_se3(t2, args[1])) {
         return NULL;
     }
-    __se3_interpolate(ret, t1, t2, u);
-    return return_se3(ret);
+    se3_interpolate(ret, t1, t2, u);
+    return return_py_se3(ret);
 }
 
 /**
  * "lambda" function for interpolator.
  * First argument: Bytes object with the raw data
  */
-static PyObject* __se3_interpolate_f(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+static PyObject* se3_interpolate_f(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 1) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 1)");
@@ -477,22 +477,22 @@ static PyObject* __se3_interpolate_f(PyObject* self, PyObject* const* args, Py_s
     se3_interpolator_t* data = (se3_interpolator_t*) PyBytes_AS_STRING(self);
     double tmp[9];
     double result[12];
-    __so3_rotation(tmp, data->axis, data->angle*u);
-    __so3_mul(result, data->rot, tmp);
-    __vo_madd(result+9, data->t1, data->dt, u, 3);
-    return return_se3(result);
+    so3_rotation(tmp, data->axis, data->angle*u);
+    so3_mul(result, data->rot, tmp);
+    vo_madd(result+9, data->t1, data->dt, u, 3);
+    return return_py_se3(result);
 }
 
 static struct PyMethodDef
-__se3_interpolator_cb = {.ml_name  = "f@interpolator",
-                         .ml_meth  = (PyCFunction) __se3_interpolate_f,
+se3_interpolator_cb = {.ml_name  = "f@interpolator",
+                         .ml_meth  = (PyCFunction) se3_interpolate_f,
                          .ml_flags = METH_FASTCALL,
                          .ml_doc   = NULL};
 
 /**
  * Returns a function of one parameter u that interpolates linearly between the two transformations T1 and T2. After f(u) is constructed, calling f(u) is about 2x faster than calling interpolate(T1,T2,u).
  */
-PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
+PyObject* py_se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nargs) {
 #ifdef MOTION_DEBUG
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Wrong Number of arguments (expected 2)");
@@ -502,13 +502,13 @@ PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nar
     double t1[12];
     double t2[12];
     se3_interpolator_t result;
-    if (parse_se3(t1, args[0])) {
+    if (parse_py_se3(t1, args[0])) {
         return NULL;
     }
-    if (parse_se3(t2, args[1])) {
+    if (parse_py_se3(t2, args[1])) {
         return NULL;
     }
-    __se3_interpolator_init(&result, t1, t2);
+    se3_interpolator_init(&result, t1, t2);
 
     PyObject* byte_data = PyBytes_FromStringAndSize(NULL, sizeof(result));
     if (byte_data == NULL) {
@@ -517,7 +517,7 @@ PyObject* se3_interpolator(PyObject* self, PyObject* const* args, Py_ssize_t nar
     char* save_data = PyBytes_AS_STRING(byte_data);
     memcpy(save_data, &result, sizeof(result));
 
-    PyObject* ret = PyCFunction_New(&__se3_interpolator_cb, byte_data);
+    PyObject* ret = PyCFunction_New(&se3_interpolator_cb, byte_data);
     Py_DECREF(byte_data);
     return ret;
 }

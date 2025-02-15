@@ -15,9 +15,9 @@
 /**
  * Return a+c*b where a and b are vectors.
  */
-PY_FUNC(PyObject* vectorops_madd(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_madd(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline void __vo_madd(vptr dest, const vptr a, const vptr b, motion_dtype c, int len) {
+static inline void vo_madd(vptr dest, const vptr a, const vptr b, motion_dtype c, int len) {
     switch(len) {
 #ifdef CASE_3_6
         case 9:
@@ -49,9 +49,9 @@ static inline void __vo_madd(vptr dest, const vptr a, const vptr b, motion_dtype
 
 #ifdef CASE_3_6 
 #define __VO_BINOP_DECL(name, op) \
-PY_FUNC(PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs)); \
+PY_FUNC(PyObject* py_vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs)); \
  \
-static inline void __vo_ ## name (vptr dest, const vptr a, motion_dtype b, int len) { \
+static inline void vo_ ## name (vptr dest, const vptr a, motion_dtype b, int len) { \
     switch(len) { \
         case 9: \
             dest[8] = op(a[8], b); \
@@ -79,7 +79,7 @@ static inline void __vo_ ## name (vptr dest, const vptr a, motion_dtype b, int l
     } \
 } \
  \
-static inline void __vo_ ## name ## v (vptr dest, const vptr a, const vptr b, int len) { \
+static inline void vo_ ## name ## v (vptr dest, const vptr a, const vptr b, int len) { \
     switch(len) { \
         case 9: \
             dest[8] = op(a[8], b[8]); \
@@ -109,15 +109,15 @@ static inline void __vo_ ## name ## v (vptr dest, const vptr a, const vptr b, in
 
 #else
 #define __VO_BINOP_DECL(name, op) \
-PY_FUNC(PyObject* vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs)); \
+PY_FUNC(PyObject* py_vectorops_ ## name (PyObject* self, PyObject* const* args, Py_ssize_t nargs)); \
  \
-static inline void __vo_ ## name (vptr dest, const vptr a, motion_dtype b, int len) { \
+static inline void vo_ ## name (vptr dest, const vptr a, motion_dtype b, int len) { \
     for (int i = 0; i < len; ++i) { \
         dest[i] = op(a[i], b); \
     } \
 } \
  \
-static inline void __vo_ ## name ## v (vptr dest, const vptr a, const vptr b, int len) { \
+static inline void vo_ ## name ## v (vptr dest, const vptr a, const vptr b, int len) { \
     for (int i = 0; i < len; ++i) { \
         dest[i] = op(a[i], b[i]); \
     } \
@@ -166,9 +166,9 @@ __VO_BINOP_DECL(minimum, __VO_MIN)
 /**
  * Dot product.
  */
-PY_FUNC(PyObject* vectorops_dot(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_dot(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_dot(const vptr a, const vptr b, int len) {
+static inline motion_dtype vo_dot(const vptr a, const vptr b, int len) {
     motion_dtype res = 0;
     switch(len) {
 #ifdef CASE_3_6
@@ -193,29 +193,29 @@ static inline motion_dtype __vo_dot(const vptr a, const vptr b, int len) {
 /**
  * Returns the norm of a, squared.
  */
-PY_FUNC(PyObject* vectorops_normSquared(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_normSquared(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_normSquared(const vptr a, int len) {
-    return __vo_dot(a, a, len);
+static inline motion_dtype vo_normSquared(const vptr a, int len) {
+    return vo_dot(a, a, len);
 }
 
 /**
  * L2 norm
  */
-PY_FUNC(PyObject* vectorops_norm(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_norm(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_norm(const vptr a, int len) {
-    return sqrt(__vo_normSquared(a, len));
+static inline motion_dtype vo_norm(const vptr a, int len) {
+    return sqrt(vo_normSquared(a, len));
 }
 
 /**
  * Returns the unit vector in the direction a.  If the norm of
  * a is less than epsilon, a is left unchanged.
  */
-PY_FUNC(PyObject* vectorops_unit(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_unit(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline void __vo_unit(vptr dest, const vptr a, motion_dtype eps, int len) {
-    motion_dtype norm = __vo_norm(a, len);
+static inline void vo_unit(vptr dest, const vptr a, motion_dtype eps, int len) {
+    motion_dtype norm = vo_norm(a, len);
     if (norm > eps) {
         motion_dtype norm_recip = 1 / norm;
         for (int i = 0; i < len; ++i) {
@@ -232,9 +232,9 @@ static inline void __vo_unit(vptr dest, const vptr a, motion_dtype eps, int len)
 /**
  * L1 norm
  */
-PY_FUNC(PyObject* vectorops_norm_L1(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_norm_L1(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_norm_L1(const vptr_r a, int len) {
+static inline motion_dtype vo_norm_L1(const vptr_r a, int len) {
     motion_dtype res = 0;
     switch(len) {
 #ifdef CASE_3_6
@@ -269,9 +269,9 @@ static inline motion_dtype __vo_norm_L1(const vptr_r a, int len) {
 /**
  * L-infinity norm
  */
-PY_FUNC(PyObject* vectorops_norm_Linf(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_norm_Linf(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_norm_Linf(const vptr_r a, int len) {
+static inline motion_dtype vo_norm_Linf(const vptr_r a, int len) {
     motion_dtype max = 0;
     motion_dtype tmp;
     // No case BS... if statements are magic
@@ -284,9 +284,9 @@ static inline motion_dtype __vo_norm_Linf(const vptr_r a, int len) {
 /**
  * Squared L2 distance
  */
-PY_FUNC(PyObject* vectorops_distanceSquared(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_distanceSquared(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_distanceSquared(const vptr_r a, const vptr_r b, int len) {
+static inline motion_dtype vo_distanceSquared(const vptr_r a, const vptr_r b, int len) {
     motion_dtype res = 0;
     switch(len) {
 #ifdef CASE_3_6
@@ -321,22 +321,22 @@ static inline motion_dtype __vo_distanceSquared(const vptr_r a, const vptr_r b, 
 /**
  * L2 distance
  */
-PY_FUNC(PyObject* vectorops_distance(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_distance(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_distance(const vptr_r a, const vptr_r b, int len) {
-    return sqrt(__vo_distanceSquared(a, b, len));
+static inline motion_dtype vo_distance(const vptr_r a, const vptr_r b, int len) {
+    return sqrt(vo_distanceSquared(a, b, len));
 }
 
 /**
  * Cross product between a 3-vector or a 2-vector
  */
-PY_FUNC(PyObject* vectorops_cross(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_cross(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline motion_dtype __vo_cross2(const vptr_r a, const vptr_r b) {
+static inline motion_dtype vo_cross2(const vptr_r a, const vptr_r b) {
     return a[0] * b[1] - a[1] * b[0];
 }
 
-static inline void __vo_cross3(vptr_r dest, vptr_r a, vptr_r b) {
+static inline void vo_cross3(vptr_r dest, vptr_r a, vptr_r b) {
     dest[0] = a[1] * b[2] - a[2] * b[1];
     dest[1] = a[2] * b[0] - a[0] * b[2];
     dest[2] = a[0] * b[1] - a[1] * b[0];
@@ -345,9 +345,9 @@ static inline void __vo_cross3(vptr_r dest, vptr_r a, vptr_r b) {
 /**
  * Linear interpolation between a and b
  */
-PY_FUNC(PyObject* vectorops_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
+PY_FUNC(PyObject* py_vectorops_interpolate(PyObject* self, PyObject* const* args, Py_ssize_t nargs));
 
-static inline void __vo_interpolate(vptr dest, const vptr a, const vptr b, motion_dtype u, int n) {
-    __vo_subv(dest, b, a, n);
-    __vo_madd(dest, a, dest, u, n);
+static inline void vo_interpolate(vptr dest, const vptr a, const vptr b, motion_dtype u, int n) {
+    vo_subv(dest, b, a, n);
+    vo_madd(dest, a, dest, u, n);
 }
