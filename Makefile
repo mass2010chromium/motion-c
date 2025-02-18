@@ -4,6 +4,7 @@ all:
 
 install:
 	mkdir -p /usr/include/motionlib
+	cp c/geometry.h /usr/include/motionlib/
 	cp c/vectorops.h /usr/include/motionlib/
 	cp c/utils.h /usr/include/motionlib/
 	cp c/so3.h /usr/include/motionlib/
