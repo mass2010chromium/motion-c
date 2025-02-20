@@ -3,6 +3,22 @@
 #include <motionlib/vectorops.h>
 #include <math.h>
 
+// Angles must be normalized from 0 to 2pi!
+static inline motion_dtype geolib_angle_err(motion_dtype a, motion_dtype b) {
+    motion_dtype diff = a - b;
+    if (diff < -M_PI) { return diff + 2*M_PI; }
+    if (diff > M_PI) { return diff - 2*M_PI; }
+    return diff;
+}
+
+// Angles must be normalized from 0 to 2pi!
+static inline bool geolib_angle_range_contains(motion_dtype a, motion_dtype b, motion_dtype x) {
+    if (b > a) {
+        return x > a && x < b;
+    }
+    return x > b && x < a;
+}
+
 // Returns first intersection (closer to p1)
 // Or if no intersection, returns false.
 static inline bool geolib_circle_intersection(const motion_dtype* center, motion_dtype radius,
