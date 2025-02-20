@@ -16,7 +16,7 @@ static inline bool geolib_angle_range_contains(motion_dtype a, motion_dtype b, m
     if (b > a) {
         return x > a && x < b;
     }
-    return x > b && x < a;
+    return x > a || x < b;
 }
 
 // Returns first intersection (closer to p1)
