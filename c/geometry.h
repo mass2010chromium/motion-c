@@ -35,29 +35,29 @@ static inline bool geolib_circle_intersection(const motion_dtype* center, motion
      *
      *   r^2 = x0^2 + y0^2 + 2t(x0.vx + y0.vy) + t^2(vx^2 + vy^2).
      *
-     * Per the quadratic formula, a=1, b=(x0.vx + y0.vy), c=(x0^2 + y0^2 - r^2).
+     * Per the quadratic formula, a=1, b=2(x0.vx + y0.vy), c=(x0^2 + y0^2 - r^2).
      */
     motion_dtype segment_dir[2];
     vo_unit(segment_dir, delta, eps, 2);
-    motion_dtype b = -vo_dot(pos_to_p1, segment_dir, 2);
+    motion_dtype b = -2*vo_dot(pos_to_p1, segment_dir, 2);
     motion_dtype c = vo_normSquared(pos_to_p1, 2) - radius*radius;
 
     motion_dtype discriminant = b*b - 4*c;
     if (discriminant < 0) { return false; }
     motion_dtype t1 = (-b - sqrt(discriminant)) / 2;
-    if (t1 > segment_length) {
+    if (t1 > segment_length+eps) {
         // No hope for t2. This was the one on the p1 side.
         return false;
     }
-    if (t1 > 0) {
+    if (t1 > 0-eps) {
         // Return point corresponding to t1, since t1 is within the bounds.
-        vo_mul(ret, segment_dir, t1, 2);
+        vo_madd(ret, p1, segment_dir, t1, 2);
         return true;
     }
     // Check second intersection.
     motion_dtype t2 = (-b + sqrt(discriminant)) / 2;
-    if (t2 > 0 && t2 < segment_length) {
-        vo_mul(ret, segment_dir, t2, 2);
+    if (t2 > 0-eps && t2 < segment_length+eps) {
+        vo_madd(ret, p1, segment_dir, t2, 2);
         return true;
     }
     return false;
