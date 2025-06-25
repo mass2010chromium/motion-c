@@ -312,7 +312,7 @@ static inline void so3_rotation_vector(vptr_r dest, const rptr_r rot) {
         motion_dtype c_inv = 1 / (1.0 - c);
         motion_dtype x2 = (rot[0] - c) * c_inv;
         motion_dtype y2 = (rot[4] - c) * c_inv;
-        motion_dtype z2 = (rot[4] - c) * c_inv;
+        motion_dtype z2 = (rot[8] - c) * c_inv;
         if (x2 < 0) {
             _assert(x2 > -1e-5);
             x2 = 0;
