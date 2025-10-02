@@ -33,7 +33,7 @@ se3 = Extension('motionlib.se3',
                             ('SE3_RESTRICT', None),
                         ])
 
-setup (name = 'Motion',
+setup (name = 'motion',
        version = '1.0',
        description = 'Motion code I guess',
        ext_modules = [ur, vo, so3, se3])

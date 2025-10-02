@@ -1,4 +1,6 @@
 env
 build
 
+motion.egg-info/
+
 *.swp
