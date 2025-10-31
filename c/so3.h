@@ -295,7 +295,7 @@ static inline void so3_from_rpy(motion_dtype* dest, const motion_dtype* rpy) {
     so3_rotation(Ry, SO3_ID+3, rpy[1]);
     so3_rotation(Rz, SO3_ID+6, rpy[2]);
     motion_dtype scratch1[9];
-    so3_mul(scratch1, Ry, Rz);
+    so3_mul(scratch1, Ry, Rx);
     so3_mul(dest, Rz, scratch1);
 }
 
