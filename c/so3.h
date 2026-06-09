@@ -711,7 +711,7 @@ static inline int so3_is_rotation(rptr_r rot, motion_dtype tol) {
     for (int i = 0; i < 9; ++i) {
         if (fabs(scratch1[i]) > tol) return 0;
     }
-    return so3_det(scratch1) > 0;
+    return so3_det(rot) > 0;
 }
 
 /**
